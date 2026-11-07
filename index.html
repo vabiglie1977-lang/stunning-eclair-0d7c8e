@@ -51,6 +51,60 @@
   .voice-banner { position: fixed; left: 50%; bottom: 170px; transform: translateX(-50%) translateY(20px); background: var(--dark); color: white; padding: 12px 20px; border-radius: 14px; font-size: 14px; z-index: 91; max-width: 90%; text-align: center; opacity: 0; pointer-events: none; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
   .voice-banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ===== Banner de donación ===== */
+  .donate-banner {
+    position: fixed;
+    bottom: 82px;
+    left: 16px;
+    right: 86px;
+    background: linear-gradient(135deg, var(--accent), #2f5c47);
+    color: white;
+    padding: 8px 10px 8px 14px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    z-index: 95;
+    font-size: 13px;
+    animation: donateFloat 3s ease-in-out infinite;
+  }
+  .donate-banner.hidden { display: none; }
+  .donate-banner .donate-icon { font-size: 16px; flex-shrink: 0; }
+  .donate-banner .donate-text { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .donate-banner .donate-btn {
+    background: white;
+    color: var(--accent);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .donate-banner .donate-btn:active { transform: scale(0.95); }
+  .donate-banner .donate-close {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 15px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  @keyframes donateFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+
   .dark-card { background-color: var(--dark); border-radius: var(--radius); padding: 24px; color: white; margin-bottom: 24px; }
   .dark-card .pre-title { color: var(--muted-dark); font-size: 14px; margin-bottom: 12px; }
   .dark-card h2 { font-size: 32px; line-height: 1.15; margin-bottom: 12px; }
@@ -179,7 +233,6 @@
   .shop-qty { font-size: 13px; color: var(--muted); }
   .btn-del { background: none; border: none; color: var(--muted); font-size: 20px; padding: 4px; }
 
-  /* Botonera escribir + escanear en Compras */
   .shop-add-box { display: flex; gap: 8px; margin-bottom: 16px; }
   .shop-add-box input { flex: 1; min-width: 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; background: var(--card); color: var(--text); }
   .shop-add-box .btn-add-shop { background: var(--accent); color: white; border: none; border-radius: 12px; padding: 0 18px; font-size: 22px; font-weight: 600; min-width: 48px; }
@@ -212,7 +265,7 @@
   .ing-row .ing-unit { flex: 1; padding: 10px 6px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; background: var(--bg); color: var(--text); min-width: 0; }
   .ing-row .ing-del { background: none; border: none; color: var(--muted); font-size: 20px; padding: 4px 6px; }
   .ing-add-btn { background: none; border: 1px dashed var(--line); color: var(--accent); border-radius: 10px; padding: 10px; width: 100%; font-size: 14px; font-weight: 500; margin-bottom: 16px; }
-  .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%) translateY(140px); opacity: 0; pointer-events: none; background: var(--dark); color: white; padding: 12px 16px; border-radius: 16px; z-index: 300; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); transition: all 0.3s ease; max-width: 90%; text-align: center; }
+  .toast { position: fixed; bottom: 150px; left: 50%; transform: translateX(-50%) translateY(140px); opacity: 0; pointer-events: none; background: var(--dark); color: white; padding: 12px 16px; border-radius: 16px; z-index: 300; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); transition: all 0.3s ease; max-width: 90%; text-align: center; }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   .photo-picker { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px dashed var(--line); border-radius: var(--radius-sm); background: var(--bg); margin-bottom: 16px; }
   .photo-preview { width: 64px; height: 64px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
@@ -259,6 +312,15 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><path d="M12 18v4"/><path d="M8 22h8"/></svg>
   </button>
 </div>
+
+<!-- ===== BANNER DE DONACIÓN ===== -->
+<div class="donate-banner" id="donateBanner">
+  <span class="donate-icon">☕</span>
+  <span class="donate-text">Apoyá Fresco</span>
+  <button class="donate-btn" onclick="window.open('https://cafecito.app/alexis7728','_blank')">Donar</button>
+  <button class="donate-close" onclick="dismissDonate(event)" title="Cerrar">×</button>
+</div>
+<!-- ===== FIN BANNER DE DONACIÓN ===== -->
 
 <div class="voice-banner" id="voiceBanner"></div>
 
@@ -341,6 +403,13 @@
     <h2 class="serif" style="margin-bottom: 20px;">Ajustes</h2>
     <div class="settings-row"><div><div class="label">Sincronización</div><div class="sub" id="syncStatusText">Iniciando…</div></div></div>
     <div class="settings-row"><div><div class="label">Legal y Privacidad</div><div class="sub">Términos y Condiciones</div></div><button class="btn-small" onclick="openLegal()">Ver</button></div>
+    <div class="settings-row">
+      <div>
+        <div class="label">Donar al creador</div>
+        <div class="sub">Apoyá el proyecto con un cafecito ☕</div>
+      </div>
+      <button class="btn-small primary" onclick="window.open('https://cafecito.app/alexis7728', '_blank')">Cafecito</button>
+    </div>
     <div class="settings-row"><div><div class="label">Exportar datos</div><div class="sub">Backup JSON</div></div><button class="btn-small primary" onclick="exportData()">Exportar</button></div>
     <div class="settings-row"><div><div class="label">Importar datos</div><div class="sub">Restaurar</div></div><label class="btn-small" style="cursor:pointer">Importar<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label></div>
     <div class="settings-row"><div><div class="label">Cambié el filtro</div><div class="sub">Resetear</div></div><button class="btn-small" onclick="resetFilter()">Resetear</button></div>
@@ -442,7 +511,7 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V10 - Compras con escribir + escanear + traducir', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V10 - Compras (escribir + escanear) + Traducción + Donación visible', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
 const FAMILY_CODE = "heladera-ink-familia";
@@ -508,6 +577,22 @@ function shiftDays(n){ var d = today(); d.setDate(d.getDate()+n); return formatD
 function daysUntil(iso){ return Math.round((parseDay(iso) - today()) / 86400000); }
 function fold(s){ return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim(); }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]); }); }
+
+// ===== Banner de donación =====
+function dismissDonate(ev) {
+  if (ev) { ev.stopPropagation(); }
+  var b = document.getElementById('donateBanner');
+  if (b) b.classList.add('hidden');
+  try { sessionStorage.setItem('fresco_donate_dismissed', '1'); } catch(e) {}
+}
+function initDonateBanner() {
+  try {
+    if (sessionStorage.getItem('fresco_donate_dismissed') === '1') {
+      var b = document.getElementById('donateBanner');
+      if (b) b.classList.add('hidden');
+    }
+  } catch(e) {}
+}
 
 const NUMEROS_ES = { "un":1,"uno":1,"una":1,"dos":2,"tres":3,"cuatro":4,"cinco":5,"seis":6,"siete":7,"ocho":8,"nueve":9,"diez":10,"once":11,"doce":12,"trece":13,"catorce":14,"quince":15,"veinte":20,"treinta":30,"medio":0.5,"media":0.5,"un cuarto":0.25,"cuarto":0.25,"media docena":6,"una docena":12 };
 
@@ -1167,7 +1252,6 @@ function receiveShop(){
   state.shop = state.shop.filter(function(l){ return !l.done; }); save(); render();
 }
 
-// ========== ESCRIBIR EN LISTA DE COMPRAS ==========
 function addShopManual(){
   var input = $("#shopAddInput");
   if (!input) return;
@@ -1182,7 +1266,6 @@ function addShopManual(){
   showToast("✓ " + parsed.name + " agregado");
 }
 
-// ========== ESCANEAR EN LISTA DE COMPRAS ==========
 var shopScanStream = null, shopScanTimer = null, shopZxingReader = null, lastShopScan = 0, shopScanBusy = false;
 
 function toggleShopScanner(){ shopScanStream ? stopShopScanner() : startShopScanner(); }
@@ -1668,6 +1751,7 @@ function render(){
 initFirebase();
 updateSyncStatus();
 setView('hoy');
+initDonateBanner();
 </script>
 </body>
 </html>
