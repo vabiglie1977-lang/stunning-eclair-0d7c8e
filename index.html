@@ -18,8 +18,25 @@
     --accent-light: #e5f0ea; --danger: #b64636; --danger-light: #faeae7;
     --warn: #d49a37; --line: #e6e2d8; --radius: 24px; --radius-sm: 14px;
   }
+  html.dark {
+    --bg: #1a1b18; --card: #252622; --dark: #f0efe9; --text: #f0efe9;
+    --muted: #9a9890; --muted-dark: #6b6963; --accent: #5a9a78;
+    --accent-light: #2a3d32; --danger: #e06b5c; --danger-light: #3d2824;
+    --warn: #e0b04a; --line: #353631;
+  }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body { margin: 0; background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px 20px 160px; max-width: 480px; margin: 0 auto; }
+  body { margin: 0; background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px 20px 200px; max-width: 480px; margin: 0 auto; transition: background-color 0.25s ease, color 0.25s ease; }
+  html.dark .btn-order-main { background: #3d3e3a; }
+  html.dark .swipe-voice-container { background: var(--card); }
+  html.dark .donate-banner { background: var(--card); border-color: #4a3530; }
+  .switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider { position: absolute; inset: 0; background: var(--line); border-radius: 28px; cursor: pointer; transition: 0.2s; }
+  .switch .slider:before { content: ""; position: absolute; width: 22px; height: 22px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .switch input:checked + .slider { background: var(--accent); }
+  .switch input:checked + .slider:before { transform: translateX(20px); }
+  .toast-action { margin-left: 12px; background: rgba(255,255,255,0.2); border: none; color: white; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 8px; cursor: pointer; }
+  .shop-row .qty-controls { flex-shrink: 0; }
   h1, h2, h3, .serif { font-family: 'DM Serif Display', serif; font-weight: 400; margin: 0; }
   button { font-family: inherit; cursor: pointer; }
   
@@ -176,10 +193,13 @@
   }
   .donate-banner .donate-close:active { opacity: 1; background: rgba(0,0,0,0.05); }
 
-  .dark-card { background-color: var(--dark); border-radius: var(--radius); padding: 24px; color: white; margin-bottom: 24px; }
-  .dark-card .pre-title { color: var(--muted-dark); font-size: 14px; margin-bottom: 12px; }
-  .dark-card h2 { font-size: 32px; line-height: 1.15; margin-bottom: 12px; }
-  .dark-card .sub { color: var(--muted-dark); font-size: 15px; margin-bottom: 24px; }
+  .dark-card { background-color: #2a2b27; border-radius: var(--radius); padding: 24px; color: #ffffff; margin-bottom: 24px; }
+  .dark-card .pre-title { color: #9f9d96; font-size: 14px; margin-bottom: 12px; }
+  .dark-card h2 { font-size: 32px; line-height: 1.15; margin-bottom: 12px; color: #ffffff; }
+  .dark-card .sub { color: #9f9d96; font-size: 15px; margin-bottom: 24px; }
+  .dark-card .stat-item .stat-label { color: #9f9d96; }
+  .dark-card .stat-item .stat-value { color: #ffffff; }
+  html.dark .dark-card { background-color: #121310; border: 1px solid #2e2f2b; }
   .divider { height: 1px; background-color: rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
   .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .stat-item .stat-label { font-size: 14px; color: var(--muted-dark); margin-bottom: 6px; }
@@ -361,8 +381,8 @@
   .ing-row .ing-unit { flex: 1; padding: 10px 6px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; background: var(--bg); color: var(--text); min-width: 0; }
   .ing-row .ing-del { background: none; border: none; color: var(--muted); font-size: 20px; padding: 4px 6px; }
   .ing-add-btn { background: none; border: 1px dashed var(--line); color: var(--accent); border-radius: 10px; padding: 10px; width: 100%; font-size: 14px; font-weight: 500; margin-bottom: 16px; }
-  .toast { position: fixed; bottom: 260px; left: 50%; transform: translateX(-50%) translateY(140px); opacity: 0; pointer-events: none; background: var(--dark); color: white; padding: 12px 16px; border-radius: 16px; z-index: 300; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); transition: all 0.3s ease; max-width: 90%; text-align: center; }
-  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast { position: fixed; bottom: 260px; left: 50%; transform: translateX(-50%) translateY(140px); opacity: 0; pointer-events: none; background: var(--dark); color: white; padding: 12px 16px; border-radius: 16px; z-index: 300; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); transition: all 0.3s ease; max-width: 90%; text-align: center; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
   .photo-picker { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px dashed var(--line); border-radius: var(--radius-sm); background: var(--bg); margin-bottom: 16px; }
   .photo-preview { width: 64px; height: 64px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
   .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
@@ -496,13 +516,20 @@
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 20px;">Ajustes</h2>
     <div class="settings-row"><div><div class="label">Sincronización</div><div class="sub" id="syncStatusText">Iniciando…</div></div></div>
+    <div class="settings-row">
+      <div>
+        <div class="label">Modo oscuro</div>
+        <div class="sub">Mejor de noche en la cocina</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode(this.checked)"><span class="slider"></span></label>
+    </div>
     <div class="settings-row"><div><div class="label">Legal y Privacidad</div><div class="sub">Términos y Condiciones</div></div><button class="btn-small" onclick="openLegal()">Ver</button></div>
     <div class="settings-row">
       <div>
         <div class="label">Donar al creador</div>
         <div class="sub">Apoyá el proyecto con un cafecito ☕</div>
       </div>
-      <button class="btn-small primary" onclick="window.open('https://cafecito.app/alexis7728', '_blank')">Cafecito</button>
+      <button class="btn-small primary" onclick="openDonation()">Cafecito</button>
     </div>
     <div class="settings-row"><div><div class="label">Exportar datos</div><div class="sub">Backup JSON</div></div><button class="btn-small primary" onclick="exportData()">Exportar</button></div>
     <div class="settings-row"><div><div class="label">Importar datos</div><div class="sub">Restaurar</div></div><label class="btn-small" style="cursor:pointer">Importar<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label></div>
@@ -1038,13 +1065,42 @@ function saveLocal(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sta
 function save(){ saveLocal(); pushToCloud(); }
 
 var toastTimeout = null;
-function showToast(msg){
+var undoAction = null;
+function showToast(msg, undoFn){
   clearTimeout(toastTimeout);
   var t = document.getElementById('toast');
   if(!t){ t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
-  t.textContent = msg;
+  undoAction = undoFn || null;
+  if(undoFn){
+    t.innerHTML = esc(msg) + ' <button class="toast-action" onclick="runUndo()">Deshacer</button>';
+  } else {
+    t.textContent = msg;
+  }
   t.classList.add('show');
-  toastTimeout = setTimeout(function(){ t.classList.remove('show'); }, 4000);
+  toastTimeout = setTimeout(function(){ t.classList.remove('show'); undoAction = null; }, undoFn ? 5000 : 3500);
+}
+function runUndo(){
+  if(typeof undoAction === 'function'){
+    var fn = undoAction;
+    undoAction = null;
+    clearTimeout(toastTimeout);
+    var t = document.getElementById('toast');
+    if(t) t.classList.remove('show');
+    fn();
+  }
+}
+function toggleDarkMode(on){
+  document.documentElement.classList.toggle('dark', !!on);
+  try { localStorage.setItem('fresco_dark', on ? '1' : '0'); } catch(e){}
+}
+function initDarkMode(){
+  var on = false;
+  try { on = localStorage.getItem('fresco_dark') === '1'; } catch(e){}
+  document.documentElement.classList.toggle('dark', on);
+  setTimeout(function(){
+    var el = document.getElementById('darkModeToggle');
+    if(el) el.checked = on;
+  }, 0);
 }
 
 var editingId = null;
@@ -1067,7 +1123,12 @@ function openEditModal(id){
   $("#addModal").classList.add("active");
 }
 
-function openSettings(){ updateSyncStatus(); $("#settingsModal").classList.add("active"); }
+function openSettings(){
+  updateSyncStatus();
+  var el = document.getElementById('darkModeToggle');
+  if(el){ try { el.checked = localStorage.getItem('fresco_dark') === '1'; } catch(e){} }
+  $("#settingsModal").classList.add("active");
+}
 function closeSettings(){ $("#settingsModal").classList.remove("active"); }
 function openLegal(){ $("#settingsModal").classList.remove("active"); $("#legalModal").classList.add("active"); }
 function closeLegal(){ $("#legalModal").classList.remove("active"); }
@@ -1408,7 +1469,27 @@ function addMissingToShop(name){
   render();
 }
 function toggleShop(id){ var l = state.shop.find(function(x){ return x.id === id; }); if (l) { l.done = !l.done; save(); render(); } }
-function removeShopLine(id){ state.shop = state.shop.filter(function(l){ return l.id !== id; }); save(); render(); }
+function removeShopLine(id){
+  var idx = state.shop.findIndex(function(l){ return l.id === id; });
+  if(idx < 0) return;
+  var removed = state.shop[idx];
+  state.shop.splice(idx, 1);
+  save(); render();
+  showToast('Eliminado de la lista', function(){
+    state.shop.splice(idx, 0, removed);
+    save(); render();
+    showToast('✓ Restaurado');
+  });
+}
+function bumpShopQty(id, dir){
+  var l = state.shop.find(function(x){ return x.id === id; });
+  if(!l || l.done) return;
+  var step = (l.unit === 'g' || l.unit === 'ml') ? 50 : (l.unit === 'kg' || l.unit === 'L' ? 0.1 : 1);
+  var next = Math.round((l.qty + dir * step) * 100) / 100;
+  if(next <= 0){ removeShopLine(id); return; }
+  l.qty = next;
+  save(); render();
+}
 function receiveShop(){
   var done = state.shop.filter(function(l){ return l.done; }); if(!done.length) return;
   done.forEach(function(line){
@@ -1613,11 +1694,63 @@ function saveRecipeManual(ev){
 
 function deleteRecipe(id, isCustom){
   if(!confirm("¿Quitar esta receta?")) return;
-  if(isCustom) state.recipes = state.recipes.filter(function(r){ return r.id !== id; });
-  else if(!state.hiddenRecipes.includes(id)) state.hiddenRecipes.push(id);
+  var snapshot = null;
+  if(isCustom){
+    var idx = state.recipes.findIndex(function(r){ return r.id === id; });
+    if(idx < 0) return;
+    snapshot = state.recipes[idx];
+    state.recipes.splice(idx, 1);
+  } else {
+    if(!state.hiddenRecipes.includes(id)) state.hiddenRecipes.push(id);
+  }
   save(); render();
+  showToast('Receta quitada', function(){
+    if(isCustom && snapshot){ state.recipes.push(snapshot); }
+    else { state.hiddenRecipes = state.hiddenRecipes.filter(function(x){ return x !== id; }); }
+    save(); render();
+    showToast('✓ Receta restaurada');
+  });
 }
 function restoreRecipes(){ state.hiddenRecipes = []; save(); render(); }
+
+function cookRecipe(recipeId, isCustom){
+  var r = null;
+  if(isCustom) r = state.recipes.find(function(x){ return x.id === recipeId; });
+  else {
+    var bi = (typeof RECIPES !== 'undefined' ? RECIPES : []).find(function(x){ return x.id === recipeId; });
+    r = bi || state.recipes.find(function(x){ return x.id === recipeId; });
+  }
+  if(!r || !r.needs || !r.needs.length){ showToast('Sin ingredientes para descontar'); return; }
+  if(!confirm('¿Cocinaste "' + r.name + '"?\nSe descontarán los ingredientes del stock.')) return;
+
+  var before = JSON.parse(JSON.stringify(state.items));
+  var deducted = 0;
+  r.needs.forEach(function(needStr){
+    var ing = parseIngredient(needStr);
+    var stock = state.items.find(function(it){ return matchesNeed(it.name, ing.name); });
+    if(!stock) return;
+    var needQty = ing.qty;
+    var needUnit = ing.unit;
+    if(needQty && needUnit){
+      var conv = convertQty(needQty, needUnit, stock.unit);
+      if(conv === null) conv = needQty; // fallback same number
+      stock.qty = Math.max(0, Math.round((stock.qty - conv) * 100) / 100);
+    } else {
+      stock.qty = Math.max(0, Math.round((stock.qty - 1) * 100) / 100);
+    }
+    deducted++;
+    if(stock.qty < 0.001){
+      state.items = state.items.filter(function(it){ return it.id !== stock.id; });
+    }
+  });
+  save(); render();
+  if(deducted === 0){ showToast('No había ingredientes en stock para descontar'); return; }
+  showToast('✓ Descontados ' + deducted + ' ingrediente' + (deducted !== 1 ? 's' : ''), function(){
+    state.items = before;
+    save(); render();
+    showToast('✓ Stock restaurado');
+  });
+}
 
 var view = "hoy", selectedDay = 0, stockQuery = "", cookableOnly = false;
 var recipeQuery = "", recipeUseStock = false, recipeResults = [], recipeBusy = false, recipeMsg = "", recipeMsgError = false;
@@ -1917,7 +2050,8 @@ function render(){
         } else { mh = '<div class="recipe-have" style="font-weight:600">¡Tenés todo!</div>'; }
         var delBtn = '<button class="btn-del-recipe" onclick="deleteRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ')">×</button>';
         var cc = 'recipe-card' + (r.imageUrl ? ' with-hero' : '');
-        var content = '<h3 class="serif">' + esc(r.name) + (r.custom ? '<span class="tag-mine">Mía</span>' : '') + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.have.length + '/' + r.needs.length + '</span></div>' + servingsBlockHtml(r) + mh + (r.custom ? '<div class="recipe-actions" style="margin-top:14px"><button class="btn-small danger" onclick="deleteRecipe(\'' + r.id + '\', true)">Quitar</button></div>' : '') + '</div>';
+        var actions = '<div class="recipe-actions" style="margin-top:14px"><button class="btn-small primary" onclick="cookRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ')">Cociné esto</button>' + (r.custom ? '<button class="btn-small danger" onclick="deleteRecipe(\'' + r.id + '\', true)">Quitar</button>' : '') + '</div>';
+        var content = '<h3 class="serif">' + esc(r.name) + (r.custom ? '<span class="tag-mine">Mía</span>' : '') + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.have.length + '/' + r.needs.length + '</span></div>' + servingsBlockHtml(r) + mh + actions + '</div>';
         html += '<div class="' + cc + '">' + delBtn + recipeHeroHtml(r) + '<div class="recipe-content">' + content + '</div></div>';
       });
     }
@@ -1951,7 +2085,9 @@ function render(){
     else state.shop.forEach(function(l){
       var img = l.snapshot && l.snapshot.imageUrl;
       var ico = img ? '<div class="item-icon" style="width:36px;height:36px"><img src="' + img + '" alt=""></div>' : '';
-      html += '<div class="shop-row ' + (l.done ? 'done' : '') + '"><input type="checkbox" ' + (l.done ? 'checked' : '') + ' onchange="toggleShop(\'' + l.id + '\')">' + ico + '<div class="shop-info"><div class="shop-name">' + esc(l.name) + '</div><div class="shop-qty">' + (Math.round(l.qty*100)/100) + ' ' + l.unit + (l.fromItemId ? ' · auto' : '') + '</div></div><button class="btn-del" onclick="removeShopLine(\'' + l.id + '\')">×</button></div>';
+      var qtyCtrl = l.done ? '<div class="shop-qty">' + (Math.round(l.qty*100)/100) + ' ' + l.unit + '</div>' :
+        '<div class="qty-controls"><button onclick="bumpShopQty(\'' + l.id + '\', -1)">−</button><span>' + (Math.round(l.qty*100)/100) + '</span><button onclick="bumpShopQty(\'' + l.id + '\', 1)">+</button></div>';
+      html += '<div class="shop-row ' + (l.done ? 'done' : '') + '"><input type="checkbox" ' + (l.done ? 'checked' : '') + ' onchange="toggleShop(\'' + l.id + '\')">' + ico + '<div class="shop-info"><div class="shop-name">' + esc(l.name) + '</div><div class="shop-qty" style="font-size:12px">' + l.unit + (l.fromItemId ? ' · auto' : '') + '</div></div>' + qtyCtrl + '<button class="btn-del" onclick="removeShopLine(\'' + l.id + '\')">×</button></div>';
     });
     html += '</div>';
     if (done.length > 0) html += '<button class="btn-add btn-block" onclick="receiveShop()">Recibir marcados (' + done.length + ')</button>';
@@ -1961,6 +2097,7 @@ function render(){
 
 initFirebase();
 updateSyncStatus();
+initDarkMode();
 setView('hoy');
 initDonateBanner();
 initVoiceSlider();
