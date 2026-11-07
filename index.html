@@ -38,96 +38,143 @@
   .btn-icon svg { width: 20px; height: 20px; }
   .btn-add { background-color: var(--accent); color: white; border: none; border-radius: 20px; padding: 12px 20px; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 
-  /* ===== FABS DE VOZ Y BOTÓN PARA OCULTARLOS ===== */
-  .voice-fabs { position: fixed; right: 20px; bottom: 100px; display: flex; flex-direction: column; gap: 12px; z-index: 90; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-  .voice-fabs.hidden { transform: translateX(100px); }
-  
-  .voice-fab { width: 56px; height: 56px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 6px 16px rgba(0,0,0,0.2); transition: transform 0.15s ease; }
-  .voice-fab svg { width: 26px; height: 26px; }
-  .voice-fab:active { transform: scale(0.92); }
-  .voice-fab.add { background: var(--accent); }
-  .voice-fab.rem { background: var(--danger); }
-  .voice-fab.recording.add { animation: voicePulse 1s infinite; box-shadow: 0 0 0 0 rgba(61,116,90,0.7); }
-  .voice-fab.recording.rem { animation: voicePulse 1s infinite; box-shadow: 0 0 0 0 rgba(182,70,54,0.7); }
-  @keyframes voicePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-
-  .voice-fab-toggle {
+  /* ===== NUEVO CONTROL DESLIZANTE DE VOZ ===== */
+  /* Control de voz: pegado al menú inferior */
+  .swipe-voice-container {
     position: fixed;
-    right: 0;
-    bottom: 145px;
-    width: 32px;
-    height: 48px;
+    bottom: 88px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 170px;
+    height: 36px;
     background: var(--card);
+    border-radius: 20px;
     border: 1px solid var(--line);
-    border-right: none;
-    border-radius: 20px 0 0 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    z-index: 90;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .swipe-bg-text {
+    font-size: 10px;
+    font-weight: 700;
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .swipe-bg-text.left { left: 11px; color: var(--danger); }
+  .swipe-bg-text.right { right: 11px; color: var(--accent); }
+
+  .swipe-voice-container.active-left .swipe-bg-text.left { opacity: 1; }
+  .swipe-voice-container.active-right .swipe-bg-text.right { opacity: 1; }
+
+  .swipe-knob {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    background: var(--accent);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 89;
-    box-shadow: -4px 0 12px rgba(0,0,0,0.08);
-    color: var(--accent);
-    transition: all 0.3s ease;
+    position: absolute;
+    left: 50%;
+    margin-left: -15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+    cursor: grab;
+    transition: background 0.2s ease, transform 0.1s ease;
+    z-index: 2;
   }
-  .voice-fab-toggle svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
-  .voice-fab-toggle.hidden-state { background: var(--accent); color: white; border-color: var(--accent); }
+  .swipe-knob:active { cursor: grabbing; }
+  .swipe-knob svg { width: 15px; height: 15px; pointer-events: none; }
 
-  .voice-banner { position: fixed; left: 50%; bottom: 170px; transform: translateX(-50%) translateY(20px); background: var(--dark); color: white; padding: 12px 20px; border-radius: 14px; font-size: 14px; z-index: 91; max-width: 90%; text-align: center; opacity: 0; pointer-events: none; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+  .swipe-voice-container.active-left .swipe-knob { background: var(--danger); }
+  .swipe-voice-container.active-right .swipe-knob { background: var(--accent); }
+  .swipe-knob.recording { animation: voicePulse 1s infinite; }
+  @keyframes voicePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+  .voice-banner {
+    position: fixed;
+    left: 50%;
+    bottom: 135px;
+    transform: translateX(-50%) translateY(16px);
+    background: var(--dark);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    z-index: 91;
+    max-width: 90%;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
   .voice-banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ===== Banner de donación ===== */
+  /* Banner de donación: fino y elegante, justo arriba del menú */
   .donate-banner {
     position: fixed;
-    bottom: 82px;
-    left: 16px;
-    right: 86px;
-    background: linear-gradient(135deg, var(--accent), #2f5c47);
-    color: white;
-    padding: 8px 10px 8px 14px;
+    bottom: 72px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: var(--text);
+    padding: 5px 10px 5px 12px;
     border-radius: 14px;
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border: 1px solid #f0d4ce;
     z-index: 95;
-    font-size: 13px;
-    animation: donateFloat 3s ease-in-out infinite;
+    font-size: 11px;
+    white-space: nowrap;
   }
   .donate-banner.hidden { display: none; }
-  .donate-banner .donate-icon { font-size: 16px; flex-shrink: 0; }
-  .donate-banner .donate-text { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .donate-banner .donate-btn {
-    background: white;
-    color: var(--accent);
-    border: none;
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    flex-shrink: 0;
-    cursor: pointer;
+  .donate-banner .donate-text {
+    font-weight: 600;
+    color: var(--dark);
+    opacity: 0.85;
   }
-  .donate-banner .donate-btn:active { transform: scale(0.95); }
-  .donate-banner .donate-close {
-    background: rgba(255,255,255,0.15);
+  .donate-banner .donate-btn {
+    background: #e85d4c;
     color: white;
     border: none;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    font-size: 15px;
-    line-height: 1;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 1px 4px rgba(232, 93, 76, 0.22);
+  }
+  .donate-banner .donate-btn:active { transform: scale(0.97); }
+  .donate-banner .donate-close {
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    font-size: 14px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    flex-shrink: 0;
     cursor: pointer;
+    opacity: 0.5;
+    border-radius: 50%;
   }
-  @keyframes donateFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-  }
+  .donate-banner .donate-close:active { opacity: 1; background: rgba(0,0,0,0.05); }
 
   .dark-card { background-color: var(--dark); border-radius: var(--radius); padding: 24px; color: white; margin-bottom: 24px; }
   .dark-card .pre-title { color: var(--muted-dark); font-size: 14px; margin-bottom: 12px; }
@@ -257,7 +304,6 @@
   .shop-qty { font-size: 13px; color: var(--muted); }
   .btn-del { background: none; border: none; color: var(--muted); font-size: 20px; padding: 4px; }
 
-  /* ===== NUEVO FORMULARIO DE COMPRAS CON CANTIDADES ===== */
   .shop-add-box { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; background: var(--card); padding: 12px; border-radius: var(--radius-sm); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
   .shop-add-box .shop-add-row { display: flex; gap: 8px; align-items: stretch; }
   .shop-add-box input[type="text"] { width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; background: var(--bg); color: var(--text); outline: none; }
@@ -273,12 +319,31 @@
   #shopScannerBox video { display: block; width: 100%; max-height: 260px; object-fit: cover; }
   #shopScannerBox .scan-close { position: absolute; right: 10px; top: 10px; background: rgba(0,0,0,.6); color: #fff; border: none; border-radius: 16px; padding: 6px 12px; font-size: 13px; }
 
-  .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--card); display: flex; justify-content: space-around; padding: 10px 0 20px; border-top: 1px solid var(--line); z-index: 100; }
-  .nav-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted); padding: 8px 16px; border-radius: 20px; position: relative; }
-  .nav-btn svg { width: 24px; height: 24px; stroke-width: 1.8; }
-  .nav-btn span { font-size: 12px; font-weight: 500; }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--card); display: flex; justify-content: space-around; align-items: flex-end; padding: 8px 0 18px; border-top: 1px solid var(--line); z-index: 100; }
+  .nav-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--muted); padding: 6px 10px; border-radius: 18px; position: relative; min-width: 56px; }
+  .nav-btn svg { width: 22px; height: 22px; stroke-width: 1.8; }
+  .nav-btn span { font-size: 11px; font-weight: 500; }
   .nav-btn.active { color: var(--accent); background-color: var(--accent-light); }
-  .nav-badge { position: absolute; top: 4px; right: 10px; background-color: var(--danger); color: white; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .nav-badge { position: absolute; top: 2px; right: 8px; background-color: var(--danger); color: white; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .nav-btn.donate {
+    color: #e85d4c;
+    padding: 4px 10px 6px;
+  }
+  .nav-btn.donate .donate-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #ff7a6b, #e85d4c);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(232, 93, 76, 0.35);
+    margin-bottom: 1px;
+  }
+  .nav-btn.donate .donate-icon svg { width: 20px; height: 20px; stroke-width: 2; }
+  .nav-btn.donate span { font-size: 10px; font-weight: 600; color: #e85d4c; }
+  .nav-btn.donate:active .donate-icon { transform: scale(0.94); }
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
   .modal-overlay.active { display: flex; }
   .modal-content { background: var(--card); border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; padding: 24px 24px 40px; max-height: 92vh; overflow-y: auto; }
@@ -296,7 +361,7 @@
   .ing-row .ing-unit { flex: 1; padding: 10px 6px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; background: var(--bg); color: var(--text); min-width: 0; }
   .ing-row .ing-del { background: none; border: none; color: var(--muted); font-size: 20px; padding: 4px 6px; }
   .ing-add-btn { background: none; border: 1px dashed var(--line); color: var(--accent); border-radius: 10px; padding: 10px; width: 100%; font-size: 14px; font-weight: 500; margin-bottom: 16px; }
-  .toast { position: fixed; bottom: 150px; left: 50%; transform: translateX(-50%) translateY(140px); opacity: 0; pointer-events: none; background: var(--dark); color: white; padding: 12px 16px; border-radius: 16px; z-index: 300; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); transition: all 0.3s ease; max-width: 90%; text-align: center; }
+  .toast { position: fixed; bottom: 260px; left: 50%; transform: translateX(-50%) translateY(140px); opacity: 0; pointer-events: none; background: var(--dark); color: white; padding: 12px 16px; border-radius: 16px; z-index: 300; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); transition: all 0.3s ease; max-width: 90%; text-align: center; }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   .photo-picker { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px dashed var(--line); border-radius: var(--radius-sm); background: var(--bg); margin-bottom: 16px; }
   .photo-preview { width: 64px; height: 64px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
@@ -335,25 +400,19 @@
 
 <main id="view"></main>
 
-<!-- Botón pestaña para ocultar/mostrar los FABs -->
-<button class="voice-fab-toggle" id="voiceFabToggle" onclick="toggleFabs()">
-  <svg id="fabToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-</button>
-
-<div class="voice-fabs" id="voiceFabsContainer">
-  <button class="voice-fab add" id="voiceAddBtn" onclick="startVoice('add')" title="Agregar a lista de compras por voz">
+<!-- CONTROL DESLIZANTE CENTRAL -->
+<div class="swipe-voice-container" id="swipeVoice">
+  <div class="swipe-bg-text left">Restar</div>
+  <div class="swipe-bg-text right">Sumar</div>
+  <div class="swipe-knob" id="swipeKnob">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><path d="M12 18v4"/><path d="M8 22h8"/></svg>
-  </button>
-  <button class="voice-fab rem" id="voiceRemBtn" onclick="startVoice('remove')" title="Restar del stock por voz">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><path d="M12 18v4"/><path d="M8 22h8"/></svg>
-  </button>
+  </div>
 </div>
 
-<!-- Banner de donación -->
-<div class="donate-banner" id="donateBanner">
-  <span class="donate-icon">☕</span>
+<!-- Banner de donación (Sutil) -->
+<div class="donate-banner hidden" id="donateBanner">
   <span class="donate-text">Apoyá Fresco</span>
-  <button class="donate-btn" onclick="window.open('https://cafecito.app/alexis7728','_blank')">Donar</button>
+  <button class="donate-btn" onclick="openDonation()">Cafecito ☕</button>
   <button class="donate-close" onclick="dismissDonate(event)" title="Cerrar">×</button>
 </div>
 
@@ -541,12 +600,18 @@
 <nav class="bottom-nav">
   <button class="nav-btn" id="nav-hoy" onclick="setView('hoy')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span>Hoy</span></button>
   <button class="nav-btn" id="nav-heladera" onclick="setView('heladera')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 10h14M9 5h2M9 14h2"/></svg><span>Stock</span><div class="nav-badge" id="stockBadge" style="display:none">0</div></button>
+  <button class="nav-btn donate" onclick="openDonation()" title="Apoyar Fresco">
+    <div class="donate-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
+    <span>Apoyar</span>
+  </button>
   <button class="nav-btn" id="nav-recetas" onclick="setView('recetas')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 14h16M4 14a8 8 0 0116 0M12 2v4M8 22h8M4 18h16"/></svg><span>Recetas</span></button>
   <button class="nav-btn" id="nav-compras" onclick="setView('compras')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg><span>Compras</span><div class="nav-badge" id="shopBadge" style="display:none">0</div></button>
 </nav>
 
 <script>
-console.log('%c[Fresco] V10 - FABs colapsables + Compras Manuales con cantidad', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V10 - Control Deslizante de Voz', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
 const FAMILY_CODE = "heladera-ink-familia";
@@ -613,36 +678,12 @@ function daysUntil(iso){ return Math.round((parseDay(iso) - today()) / 86400000)
 function fold(s){ return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim(); }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]); }); }
 
-// ===== Ocultar / Mostrar FABs de voz =====
-function toggleFabs() {
-  const fabs = document.getElementById('voiceFabsContainer');
-  const toggle = document.getElementById('voiceFabToggle');
-  const icon = document.getElementById('fabToggleIcon');
-  const isHidden = fabs.classList.toggle('hidden');
-  toggle.classList.toggle('hidden-state', isHidden);
-  
-  if (isHidden) {
-    icon.innerHTML = '<path d="m15 18-6-6 6-6"/>'; // Flecha izquierda
-  } else {
-    icon.innerHTML = '<path d="m9 18 6-6-6-6"/>'; // Flecha derecha
-  }
-  try { localStorage.setItem('fresco_fabs_hidden', isHidden ? '1' : '0'); } catch(e) {}
-}
-
-function initFabs() {
-  try {
-    if (localStorage.getItem('fresco_fabs_hidden') === '1') {
-      const fabs = document.getElementById('voiceFabsContainer');
-      const toggle = document.getElementById('voiceFabToggle');
-      const icon = document.getElementById('fabToggleIcon');
-      if (fabs) fabs.classList.add('hidden');
-      if (toggle) toggle.classList.add('hidden-state');
-      if (icon) icon.innerHTML = '<path d="m15 18-6-6 6-6"/>';
-    }
-  } catch(e) {}
-}
-
 // ===== Banner de donación =====
+const DONATION_URL = "https://cafecito.app/alexis7728";
+function openDonation(){
+  window.open(DONATION_URL, "_blank");
+  if (typeof showToast === "function") showToast("¡Gracias por el apoyo! ❤️");
+}
 function dismissDonate(ev) {
   if (ev) { ev.stopPropagation(); }
   var b = document.getElementById('donateBanner');
@@ -650,12 +691,77 @@ function dismissDonate(ev) {
   try { sessionStorage.setItem('fresco_donate_dismissed', '1'); } catch(e) {}
 }
 function initDonateBanner() {
-  try {
-    if (sessionStorage.getItem('fresco_donate_dismissed') === '1') {
-      var b = document.getElementById('donateBanner');
-      if (b) b.classList.add('hidden');
+  // Banner flotante desactivado: el botón vive en el menú inferior
+  var b = document.getElementById('donateBanner');
+  if (b) b.classList.add('hidden');
+}
+
+// ===== Lógica del control deslizante de voz =====
+let isDragging = false;
+let startX = 0;
+let currentDeltaX = 0;
+let activeMode = null;
+const MAX_DRAG = 60;
+const THRESHOLD = 35;
+
+function initVoiceSlider() {
+  const container = document.getElementById('swipeVoice');
+  const knob = document.getElementById('swipeKnob');
+
+  knob.addEventListener('pointerdown', (e) => {
+    isDragging = true;
+    startX = e.clientX;
+    knob.style.transition = 'none';
+    knob.setPointerCapture(e.pointerId);
+  });
+
+  knob.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    let deltaX = e.clientX - startX;
+    
+    if (deltaX > MAX_DRAG) deltaX = MAX_DRAG;
+    if (deltaX < -MAX_DRAG) deltaX = -MAX_DRAG;
+    currentDeltaX = deltaX;
+
+    knob.style.transform = `translateX(${deltaX}px)`;
+
+    if (deltaX > THRESHOLD) {
+      container.classList.add('active-right');
+      container.classList.remove('active-left');
+      activeMode = 'add';
+      if (navigator.vibrate) navigator.vibrate(10);
+    } else if (deltaX < -THRESHOLD) {
+      container.classList.add('active-left');
+      container.classList.remove('active-right');
+      activeMode = 'remove';
+      if (navigator.vibrate) navigator.vibrate(10);
+    } else {
+      container.classList.remove('active-right', 'active-left');
+      activeMode = null;
     }
-  } catch(e) {}
+  });
+
+  knob.addEventListener('pointerup', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    knob.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    knob.style.transform = 'translateX(0px)';
+    
+    if (activeMode) {
+      startVoice(activeMode);
+    }
+    
+    container.classList.remove('active-right', 'active-left');
+    activeMode = null;
+  });
+
+  knob.addEventListener('pointercancel', (e) => {
+    isDragging = false;
+    knob.style.transition = 'transform 0.2s';
+    knob.style.transform = 'translateX(0px)';
+    container.classList.remove('active-right', 'active-left');
+    activeMode = null;
+  });
 }
 
 const NUMEROS_ES = { "un":1,"uno":1,"una":1,"dos":2,"tres":3,"cuatro":4,"cinco":5,"seis":6,"siete":7,"ocho":8,"nueve":9,"diez":10,"once":11,"doce":12,"trece":13,"catorce":14,"quince":15,"veinte":20,"treinta":30,"medio":0.5,"media":0.5,"un cuarto":0.25,"cuarto":0.25,"media docena":6,"una docena":12 };
@@ -701,10 +807,15 @@ function startVoice(mode){
   voiceRecognition.lang = "es-AR";
   voiceRecognition.continuous = false;
   voiceRecognition.interimResults = true;
-  var fab = mode === "add" ? $("#voiceAddBtn") : $("#voiceRemBtn");
-  var other = mode === "add" ? $("#voiceRemBtn") : $("#voiceAddBtn");
+  
+  var knob = document.getElementById('swipeKnob');
   showVoiceBanner("🎤 Escuchando…");
-  voiceRecognition.onstart = function(){ voiceActive = true; if(fab) fab.classList.add("recording"); if(other) other.style.opacity = "0.4"; };
+  
+  voiceRecognition.onstart = function(){ 
+    voiceActive = true; 
+    if(knob) knob.classList.add("recording"); 
+  };
+  
   voiceRecognition.onresult = function(ev){
     var tr = "";
     for(var i = ev.resultIndex; i < ev.results.length; i++) tr += ev.results[i][0].transcript;
@@ -725,9 +836,8 @@ function startVoice(mode){
 function stopVoice(){
   voiceActive = false;
   if(voiceRecognition){ try { voiceRecognition.stop(); } catch(e){} voiceRecognition = null; }
-  var a = $("#voiceAddBtn"), r = $("#voiceRemBtn");
-  if(a){ a.classList.remove("recording"); a.style.opacity = "1"; }
-  if(r){ r.classList.remove("recording"); r.style.opacity = "1"; }
+  var knob = document.getElementById('swipeKnob');
+  if(knob) knob.classList.remove("recording");
 }
 
 function showVoiceBanner(text, dur){
@@ -1853,7 +1963,7 @@ initFirebase();
 updateSyncStatus();
 setView('hoy');
 initDonateBanner();
-initFabs();
+initVoiceSlider();
 </script>
 </body>
 </html>
