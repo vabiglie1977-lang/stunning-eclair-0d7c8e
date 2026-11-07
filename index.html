@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V13 — Despensa de casa</title>
+<title>Fresco V14 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -278,7 +278,7 @@
   .legal-content p { font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0 0 12px; }
   .legal-content ul { font-size: 13px; line-height: 1.6; color: var(--muted); padding-left: 20px; margin: 0 0 12px; }
 
-  /* ===== V13: Importar recetas ===== */
+  /* ===== V14: Importar y Chef IA ===== */
   .import-input { width: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; background: var(--bg); color: var(--text); margin-bottom: 12px; }
   .import-textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: 'Inter', monospace; font-size: 14px; background: var(--bg); color: var(--text); margin-bottom: 12px; resize: vertical; line-height: 1.5; }
   .import-hint { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 10px 0 0; }
@@ -287,13 +287,14 @@
   .import-msg.success { background: var(--accent-light); color: var(--accent); }
   .import-msg.info { color: var(--muted); }
   .import-preview { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .ai-loading { font-size: 14px; text-align: center; color: var(--accent); font-weight: 600; padding: 20px; animation: pulse 1.5s infinite; }
 </style>
 </head>
 <body>
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V13</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V14</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -399,7 +400,7 @@
   </div>
 </div>
 
-<!-- V13: Modal importar receta (Solo texto) -->
+<!-- Modal Importar Texto -->
 <div class="modal-overlay" id="importRecipeModal" onclick="if(event.target===this)closeImportModal()">
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 8px;">Importar receta</h2>
@@ -428,6 +429,35 @@
     </div>
 
     <button type="button" class="btn-block" style="background:transparent; border:none; color:var(--muted); margin-top:8px" onclick="closeImportModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- V14: Modal Chef IA -->
+<div class="modal-overlay" id="aiRecipeModal" onclick="if(event.target===this)closeAIModal()">
+  <div class="modal-content">
+    <h2 class="serif" style="margin-bottom: 8px;">🤖 Chef IA</h2>
+    <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Decime qué querés comer y lo invento con lo que tenés</p>
+
+    <div id="aiStepInput">
+      <textarea id="aiPrompt" class="import-textarea" rows="3" placeholder="Ej: Algo rápido con pollo para 2 personas, sin gluten..."></textarea>
+      <label class="rs-check" style="margin-bottom: 16px;">
+        <input type="checkbox" id="aiUseStock" checked> Usar los ingredientes de mi stock
+      </label>
+      <button class="btn-add btn-block" style="justify-content:center; width:100%" onclick="generateAIRecipe()" id="aiGenerateBtn">Generar receta</button>
+      <div id="aiMsg" class="import-msg"></div>
+    </div>
+
+    <div id="aiStepPreview" style="display:none">
+      <h3 class="serif" style="font-size: 20px; margin-bottom: 12px;">Revisá y ajustá</h3>
+      <div class="form-group"><label>Nombre</label><input type="text" id="aiPreviewName" class="import-input" style="margin-bottom:0"></div>
+      <div class="form-group"><label>Minutos</label><input type="number" id="aiPreviewMinutes" class="import-input" min="1" style="margin-bottom:0"></div>
+      <div class="form-group"><label>Ingredientes (uno por línea)</label><textarea id="aiPreviewIngredients" class="import-textarea" rows="6" style="margin-bottom:0"></textarea></div>
+      <div class="form-group"><label>Pasos (uno por línea)</label><textarea id="aiPreviewSteps" class="import-textarea" rows="6" style="margin-bottom:0"></textarea></div>
+      <button class="btn-add btn-block" style="justify-content:center; width:100%" onclick="saveAIRecipe()">Guardar receta</button>
+      <button class="btn-small" style="width:100%; margin-top:8px; background:transparent; border:none; color:var(--muted)" onclick="resetAIModal()">← Volver a pedir otra</button>
+    </div>
+
+    <button type="button" class="btn-block" style="background:transparent; border:none; color:var(--muted); margin-top:8px" onclick="closeAIModal()">Cancelar</button>
   </div>
 </div>
 
@@ -474,13 +504,14 @@
       <li><strong>OpenFoodFacts:</strong> Para buscar información de productos al escanear el código de barras.</li>
       <li><strong>TheMealDB, Google Translate y MyMemory:</strong> Para buscar recetas de cocina y traducirlas automáticamente.</li>
       <li><strong>Firebase (Google):</strong> Para guardar y sincronizar tu lista de compras y despensa.</li>
+      <li><strong>Pollinations AI:</strong> Para generar recetas inteligentes basadas en tu stock.</li>
     </ul>
     <h4>4. Límite de Responsabilidad</h4>
     <ul>
       <li>Pérdida de datos (se recomienda usar "Exportar" en Ajustes).</li>
       <li>Alimentos vencidos, ya que las fechas dependen del usuario.</li>
       <li>Información nutricional incorrecta proveniente de bases de datos externas.</li>
-      <li>Recetas importadas: verificá siempre los ingredientes antes de cocinar.</li>
+      <li>Recetas generadas por IA: verificá siempre los ingredientes antes de cocinar.</li>
     </ul>
     <h4>5. Seguridad</h4>
     <p>Te recomendamos no compartir tu base de datos de Firebase ni las reglas de configuración.</p>
@@ -558,11 +589,11 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V13 - Importar solo texto', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V14 - Chef IA integrado', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
 const FAMILY_CODE = "heladera-ink-familia";
-const STORAGE_KEY = "fresco_ui_v13";
+const STORAGE_KEY = "fresco_ui_v14";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
 let fbDb = null, fbConnected = false, fbReady = false, skipCloudWrite = false, cloudWriteTimer = null;
@@ -944,7 +975,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v13","fresco_ui_v12_2","fresco_ui_v12_1","fresco_ui_v12","fresco_ui_v11","fresco_ui_v10","fresco_ui_v9","fresco_ui_v8","fresco_ui_v7","fresco_ui_v5"].forEach(function(k){
+["fresco_ui_v14","fresco_ui_v13","fresco_ui_v12_2","fresco_ui_v12_1","fresco_ui_v12","fresco_ui_v11","fresco_ui_v10","fresco_ui_v9","fresco_ui_v8","fresco_ui_v7","fresco_ui_v5"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -1731,7 +1762,7 @@ function addRecipe(i){
 }
 
 /* ============================================================
-   V13 — IMPORTAR RECETA SOLO TEXTO
+   V14 — IMPORTAR TEXTO Y CHEF IA
    ============================================================ */
 
 var importedRecipePreview = null;
@@ -1886,7 +1917,114 @@ function saveImportedRecipe(){
 }
 
 /* ============================================================
-   FIN V13 — IMPORTAR
+   V14 — CHEF IA
+   ============================================================ */
+
+function openAIModal() {
+  $("#aiRecipeModal").classList.add("active");
+  resetAIModal();
+}
+
+function closeAIModal() {
+  $("#aiRecipeModal").classList.remove("active");
+}
+
+function resetAIModal() {
+  $("#aiStepInput").style.display = "block";
+  $("#aiStepPreview").style.display = "none";
+  $("#aiPrompt").value = "";
+  $("#aiMsg").textContent = "";
+  $("#aiMsg").className = "import-msg";
+  $("#aiGenerateBtn").disabled = false;
+  $("#aiGenerateBtn").textContent = "Generar receta";
+}
+
+async function generateAIRecipe() {
+  var prompt = ($("#aiPrompt").value || "").trim();
+  if (!prompt) { 
+    $("#aiMsg").textContent = "Escribí qué querés comer"; 
+    $("#aiMsg").className = "import-msg error"; 
+    return; 
+  }
+
+  var useStock = $("#aiUseStock").checked;
+  var stockList = [];
+  if (useStock) {
+    stockList = state.items.map(function(i) { return i.name + " (" + i.qty + " " + i.unit + ")"; });
+  }
+
+  $("#aiGenerateBtn").disabled = true;
+  $("#aiGenerateBtn").textContent = "Cocinando... 🍳";
+  $("#aiMsg").textContent = "El Chef IA está pensando tu receta (puede tardar unos segundos)...";
+  $("#aiMsg").className = "import-msg info";
+
+  var fullPrompt = "Eres un chef experto en cocina. Escribe una receta basada en esta petición: '" + prompt + "'. ";
+  if (stockList.length > 0) {
+    fullPrompt += "Intenta usar SOLO o principalmente estos ingredientes disponibles: " + stockList.join(", ") + ". ";
+  }
+  fullPrompt += "Devuelve SOLO un objeto JSON válido (sin bloques markdown, sin texto extra) con esta estructura exacta: " +
+                "{ \"name\": \"Nombre de la receta\", \"minutes\": 20, \"needs\": [\"ingrediente (100 g)\", \"ingrediente (2 u)\"], \"steps\": [\"Paso 1\", \"Paso 2\"] }. " +
+                "Usa español. Los ingredientes deben tener el formato 'nombre (cantidad unidad)'.";
+
+  try {
+    var res = await fetch("https://text.pollinations.ai/" + encodeURIComponent(fullPrompt));
+    if (!res.ok) throw new Error("Error de red");
+    var text = await res.text();
+    
+    // Extraer JSON en caso de que el modelo agregue texto extra o bloques markdown
+    var match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("No se encontró JSON válido en la respuesta");
+    
+    var recipe = JSON.parse(match[0]);
+    if (!recipe.name || !recipe.needs || !recipe.steps) throw new Error("JSON incompleto");
+
+    // Cargar en el preview
+    $("#aiPreviewName").value = recipe.name;
+    $("#aiPreviewMinutes").value = recipe.minutes || 20;
+    $("#aiPreviewIngredients").value = (recipe.needs || []).join("\n");
+    $("#aiPreviewSteps").value = (recipe.steps || []).join("\n");
+
+    $("#aiStepInput").style.display = "none";
+    $("#aiStepPreview").style.display = "block";
+    $("#aiMsg").textContent = "✓ Receta generada con éxito";
+    $("#aiMsg").className = "import-msg success";
+
+  } catch (e) {
+    console.error(e);
+    $("#aiMsg").textContent = "Hubo un error al generar la receta. Probá de nuevo.";
+    $("#aiMsg").className = "import-msg error";
+  } finally {
+    $("#aiGenerateBtn").disabled = false;
+    $("#aiGenerateBtn").textContent = "Generar receta";
+  }
+}
+
+function saveAIRecipe() {
+  var name = ($("#aiPreviewName").value || "").trim();
+  if (!name) { alert("Ponele un nombre a la receta"); return; }
+  var minutes = parseInt($("#aiPreviewMinutes").value, 10) || 20;
+  var ingLines = ($("#aiPreviewIngredients").value || "").split(/\r?\n/).filter(function(s){ return s.trim(); });
+  var stepLines = ($("#aiPreviewSteps").value || "").split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
+  var needs = parseIngredientsLines(ingLines);
+
+  if (needs.length === 0) { alert("Agregá al menos un ingrediente"); return; }
+
+  state.recipes.push({
+    id: uid(),
+    name: name,
+    minutes: minutes,
+    needs: needs,
+    steps: stepLines,
+    imageUrl: null
+  });
+  save();
+  render();
+  closeAIModal();
+  showToast("✓ Receta del Chef IA guardada: " + name);
+}
+
+/* ============================================================
+   FIN V14 — IMPORTAR Y CHEF IA
    ============================================================ */
 
 function setView(v){ view = v; document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); }); $("#nav-" + v).classList.add('active'); render(); window.scrollTo({top:0, behavior:"smooth"}); }
@@ -2026,7 +2164,13 @@ function render(){
   }
   else if (view === "recetas") {
     html += '<div class="rs-box"><div class="rs-row"><input type="text" id="recipeQuery" placeholder="Ej. pasta, tarta…" value="' + esc(recipeQuery) + '" onkeydown="if(event.key===\'Enter\')searchRecipes()"><button type="button" onclick="searchRecipes()" ' + (recipeBusy ? 'disabled' : '') + '>' + (recipeBusy ? '...' : 'Buscar') + '</button></div><label class="rs-check"><input type="checkbox" id="recipeStock" ' + (recipeUseStock ? 'checked' : '') + '> Usar lo que tengo</label><div class="rs-note">Recetas de TheMealDB</div></div>';
-    html += '<div style="display:flex; gap:6px; margin-bottom:16px"><button class="btn-small primary" style="flex:1; padding:12px 6px; font-size:12px" onclick="openRecipeModal()">+ Crear</button><button class="btn-small" style="flex:1; padding:12px 6px; font-size:12px; background:var(--accent-light); color:var(--accent); border-color:var(--accent-light)" onclick="openImportModal()">📥 Importar</button><button class="btn-small" style="flex:1; padding:12px 6px; font-size:12px ' + (cookableOnly ? 'background:var(--accent); color:white; border-color:var(--accent)' : '') + '" onclick="toggleCookable()">' + (cookableOnly ? '✓ Filtrado' : 'Solo puedo') + '</button></div>';
+    
+    html += '<div style="display:flex; gap:6px; margin-bottom:16px">' +
+      '<button class="btn-small primary" style="flex:1; padding:12px 6px; font-size:12px" onclick="openRecipeModal()">+ Crear</button>' +
+      '<button class="btn-small" style="flex:1; padding:12px 6px; font-size:12px; background:var(--accent-light); color:var(--accent); border-color:var(--accent-light)" onclick="openImportModal()">📥 Importar</button>' +
+      '<button class="btn-small" style="flex:1; padding:12px 6px; font-size:12px; background:#8a2be2; color:white; border-color:#8a2be2" onclick="openAIModal()">🤖 Chef IA</button>' +
+      '</div>';
+
     if (recipeMsg) html += '<p class="rs-msg ' + (recipeMsgError ? 'error' : '') + '">' + esc(recipeMsg) + '</p>';
     if (recipeResults.length) {
       html += '<h3 class="serif rs-title">Resultados</h3>';
