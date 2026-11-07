@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V12.2 — Despensa de casa</title>
+<title>Fresco V13 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -278,10 +278,7 @@
   .legal-content p { font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0 0 12px; }
   .legal-content ul { font-size: 13px; line-height: 1.6; color: var(--muted); padding-left: 20px; margin: 0 0 12px; }
 
-  /* ===== V12.2: Importar recetas ===== */
-  .import-tabs { display: flex; gap: 6px; background: var(--bg); padding: 4px; border-radius: 14px; margin-bottom: 16px; }
-  .import-tab { flex: 1; padding: 10px; border: none; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; border-radius: 10px; }
-  .import-tab.active { background: var(--card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  /* ===== V13: Importar recetas ===== */
   .import-input { width: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; background: var(--bg); color: var(--text); margin-bottom: 12px; }
   .import-textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: 'Inter', monospace; font-size: 14px; background: var(--bg); color: var(--text); margin-bottom: 12px; resize: vertical; line-height: 1.5; }
   .import-hint { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 10px 0 0; }
@@ -296,7 +293,7 @@
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V12.2</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V13</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -402,16 +399,11 @@
   </div>
 </div>
 
-<!-- V12.2: Modal importar receta -->
+<!-- V13: Modal importar receta (Solo texto) -->
 <div class="modal-overlay" id="importRecipeModal" onclick="if(event.target===this)closeImportModal()">
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 8px;">Importar receta</h2>
-    <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Copiá el texto de Instagram o usá un link de blog</p>
-
-    <div class="import-tabs">
-      <button class="import-tab active" id="importTabTextBtn" onclick="switchImportTab('text')">📝 Pegar texto</button>
-      <button class="import-tab" id="importTabUrlBtn" onclick="switchImportTab('url')">🔗 Desde link</button>
-    </div>
+    <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Copiá el texto de Instagram/TikTok y pegalo acá</p>
 
     <div id="importTabText">
       <div style="background:var(--bg); padding:12px; border-radius:12px; margin-bottom:12px; border:1px solid var(--line);">
@@ -419,15 +411,9 @@
          <p style="margin:0 0 10px; font-size:12px; color:var(--muted);">1. Abrí el post y tocá los 3 puntitos.<br>2. Elegí "Copiar texto".<br>3. Pegalo acá abajo.</p>
          <button class="btn-small" style="width:100%; background:#E1306C; color:white; border:none;" onclick="window.open('https://www.instagram.com/', '_blank')">Abrir Instagram</button>
       </div>
-      <textarea id="importText" class="import-textarea" rows="6" placeholder="Pegá acá la receta que copiaste..."></textarea>
+      <textarea id="importText" class="import-textarea" rows="8" placeholder="Pegá acá la receta que copiaste..."></textarea>
       <button class="btn-add btn-block" style="justify-content:center; width:100%" onclick="importFromText()">Procesar texto</button>
       <p class="import-hint">Se detectan automáticamente las secciones "Ingredientes" y "Preparación".</p>
-    </div>
-
-    <div id="importTabUrl" style="display:none">
-      <input type="url" id="importUrl" class="import-input" placeholder="https://...">
-      <button class="btn-add btn-block" style="justify-content:center; width:100%" onclick="importFromUrl()" id="importUrlBtn">Importar desde link</button>
-      <p class="import-hint">Funciona solo con blogs de recetas (Sites que usan Schema.org). Instagram y TikTok bloquean los links.</p>
     </div>
 
     <div id="importMsg" class="import-msg"></div>
@@ -488,7 +474,6 @@
       <li><strong>OpenFoodFacts:</strong> Para buscar información de productos al escanear el código de barras.</li>
       <li><strong>TheMealDB, Google Translate y MyMemory:</strong> Para buscar recetas de cocina y traducirlas automáticamente.</li>
       <li><strong>Firebase (Google):</strong> Para guardar y sincronizar tu lista de compras y despensa.</li>
-      <li><strong>Proxies CORS públicos:</strong> Para leer recetas desde links externos que bloquean acceso directo.</li>
     </ul>
     <h4>4. Límite de Responsabilidad</h4>
     <ul>
@@ -573,11 +558,11 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V12.2 - Flujo de importación mejorado', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V13 - Importar solo texto', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
 const FAMILY_CODE = "heladera-ink-familia";
-const STORAGE_KEY = "fresco_ui_v12_2";
+const STORAGE_KEY = "fresco_ui_v13";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
 let fbDb = null, fbConnected = false, fbReady = false, skipCloudWrite = false, cloudWriteTimer = null;
@@ -959,7 +944,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v12_2","fresco_ui_v12_1","fresco_ui_v12","fresco_ui_v11","fresco_ui_v10","fresco_ui_v9","fresco_ui_v8","fresco_ui_v7","fresco_ui_v5"].forEach(function(k){
+["fresco_ui_v13","fresco_ui_v12_2","fresco_ui_v12_1","fresco_ui_v12","fresco_ui_v11","fresco_ui_v10","fresco_ui_v9","fresco_ui_v8","fresco_ui_v7","fresco_ui_v5"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -1746,7 +1731,7 @@ function addRecipe(i){
 }
 
 /* ============================================================
-   V12.2 — IMPORTAR RECETA DESDE LINK O TEXTO
+   V13 — IMPORTAR RECETA SOLO TEXTO
    ============================================================ */
 
 var importedRecipePreview = null;
@@ -1754,8 +1739,6 @@ var importedRecipePreview = null;
 function openImportModal(){
   importedRecipePreview = null;
   $("#importRecipeModal").classList.add("active");
-  switchImportTab('text'); // Ahora por defecto abre "Pegar texto"
-  $("#importUrl").value = "";
   $("#importText").value = "";
   $("#importMsg").className = "import-msg";
   $("#importMsg").textContent = "";
@@ -1765,203 +1748,11 @@ function closeImportModal(){
   $("#importRecipeModal").classList.remove("active");
   importedRecipePreview = null;
 }
-function switchImportTab(tab){
-  var isText = tab === 'text';
-  $("#importTabTextBtn").classList.toggle("active", isText);
-  $("#importTabUrlBtn").classList.toggle("active", !isText);
-  $("#importTabText").style.display = isText ? "block" : "none";
-  $("#importTabUrl").style.display = isText ? "none" : "block";
-  $("#importPreview").style.display = "none";
-  $("#importMsg").className = "import-msg";
-  $("#importMsg").textContent = "";
-}
 
 function setImportMsg(text, kind){
   var el = $("#importMsg");
   el.textContent = text;
   el.className = "import-msg " + (kind || "info");
-}
-
-function fetchWithTimeout(url, ms){
-  ms = ms || 10000;
-  return Promise.race([
-    fetch(url, { cache: "no-store" }),
-    new Promise(function(_, reject){ setTimeout(function(){ reject(new Error("timeout")); }, ms); })
-  ]);
-}
-
-async function fetchWithCorsProxy(url){
-  var proxies = [
-    "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
-    "https://corsproxy.io/?" + encodeURIComponent(url),
-    "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(url)
-  ];
-  var lastErr = null;
-  for (var i = 0; i < proxies.length; i++) {
-    try {
-      var res = await fetchWithTimeout(proxies[i], 12000);
-      if (res.ok) {
-        var text = await res.text();
-        if (text && text.length > 300) return text;
-      }
-    } catch(e){ lastErr = e; }
-  }
-  throw lastErr || new Error("No pude leer el link");
-}
-
-var BLOCKED_DOMAINS = ["instagram.com","tiktok.com","facebook.com","fb.watch","youtube.com","youtu.be","twitter.com","x.com","pinterest."];
-
-function isBlockedDomain(url){
-  try {
-    var u = new URL(url);
-    var host = u.hostname.toLowerCase();
-    return BLOCKED_DOMAINS.some(function(d){ return host.indexOf(d) >= 0; });
-  } catch(e){ return false; }
-}
-
-function extractOgTags(html){
-  function get(prop){
-    var re = new RegExp('<meta[^>]+(?:property|name)=["\']' + prop + '["\'][^>]+content=["\']([^"\']+)["\']', 'i');
-    var m = html.match(re);
-    return m ? m[1] : null;
-  }
-  return {
-    title: get("og:title") || (html.match(/<title[^>]*>([^<]+)<\/title>/i) || [])[1] || null,
-    description: get("og:description"),
-    image: get("og:image")
-  };
-}
-
-function extractJsonLdScripts(html){
-  var scripts = [];
-  var re = /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-  var m;
-  while ((m = re.exec(html)) !== null) {
-    scripts.push(m[1]);
-  }
-  return scripts;
-}
-
-function findRecipeInJsonLd(data){
-  if (!data) return null;
-  if (Array.isArray(data)) {
-    for (var i = 0; i < data.length; i++) {
-      var found = findRecipeInJsonLd(data[i]);
-      if (found) return found;
-    }
-    return null;
-  }
-  if (typeof data === 'object') {
-    var type = data["@type"];
-    var types = Array.isArray(type) ? type : [type];
-    for (var j = 0; j < types.length; j++) {
-      if (String(types[j]).toLowerCase() === 'recipe') return data;
-    }
-    if (data["@graph"]) return findRecipeInJsonLd(data["@graph"]);
-    if (data.mainEntity) return findRecipeInJsonLd(data.mainEntity);
-  }
-  return null;
-}
-
-function parseIsoDuration(dur){
-  if (!dur) return null;
-  var m = String(dur).match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
-  if (!m) return null;
-  var h = parseInt(m[1] || 0, 10);
-  var mi = parseInt(m[2] || 0, 10);
-  var total = h * 60 + mi;
-  return total > 0 ? total : null;
-}
-
-function extractImageFromJsonLd(img){
-  if (!img) return null;
-  if (typeof img === "string") return img;
-  if (Array.isArray(img)) return extractImageFromJsonLd(img[0]);
-  if (img.url) return img.url;
-  return null;
-}
-
-function normalizeJsonLdRecipe(r){
-  var name = r.name || "Receta importada";
-  var minutes = parseIsoDuration(r.totalTime || r.cookTime || r.prepTime) || 20;
-  var imageUrl = extractImageFromJsonLd(r.image);
-  var needs = (r.recipeIngredient || r.ingredients || []).map(function(x){ return String(x).trim(); }).filter(Boolean);
-  var steps = [];
-  var ins = r.recipeInstructions;
-  if (Array.isArray(ins)) {
-    ins.forEach(function(s){
-      if (typeof s === "string") steps.push(s.trim());
-      else if (s && s.text) steps.push(String(s.text).trim());
-      else if (s && s.itemListElement) {
-        (s.itemListElement || []).forEach(function(sub){
-          if (typeof sub === "string") steps.push(sub.trim());
-          else if (sub && sub.text) steps.push(String(sub.text).trim());
-        });
-      }
-    });
-  } else if (typeof ins === "string") {
-    steps = ins.split(/\r?\n|(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑ])/).map(function(s){ return s.trim(); }).filter(Boolean);
-  }
-  return { name: name, minutes: minutes, needs: needs, steps: steps, imageUrl: imageUrl };
-}
-
-async function importFromUrl(){
-  var url = ($("#importUrl").value || "").trim();
-  if (!url) { setImportMsg("Pegá un link primero", "error"); return; }
-  if (!/^https?:\/\//i.test(url)) { setImportMsg("El link debe empezar con http:// o https://", "error"); return; }
-
-  if (isBlockedDomain(url)) {
-    switchImportTab('text');
-    setImportMsg("Instagram, TikTok y YouTube bloquean la lectura automática. Por favor, copiá el texto del post y pegalo en la pestaña de al lado.", "error");
-    return;
-  }
-
-  var btn = $("#importUrlBtn");
-  btn.disabled = true;
-  var originalText = btn.textContent;
-  btn.textContent = "Leyendo…";
-  setImportMsg("Descargando la página…", "info");
-
-  try {
-    var html = await fetchWithCorsProxy(url);
-    setImportMsg("Buscando receta…", "info");
-
-    var recipe = null;
-    var scripts = extractJsonLdScripts(html);
-    for (var i = 0; i < scripts.length; i++) {
-      try {
-        var data = JSON.parse(scripts[i]);
-        var found = findRecipeInJsonLd(data);
-        if (found) { recipe = normalizeJsonLdRecipe(found); break; }
-      } catch(e){}
-    }
-
-    if (recipe && (recipe.needs.length > 0 || recipe.steps.length > 0)) {
-      importedRecipePreview = recipe;
-      showImportPreview(recipe);
-      setImportMsg("✓ Encontré: " + recipe.name, "success");
-    } else {
-      var og = extractOgTags(html);
-      if (og.title) {
-        importedRecipePreview = {
-          name: og.title,
-          minutes: 20,
-          needs: [],
-          steps: og.description ? [og.description] : [],
-          imageUrl: og.image || null
-        };
-        showImportPreview(importedRecipePreview);
-        setImportMsg("Solo encontré el título y la descripción. Revisá y completá los ingredientes y pasos a mano.", "info");
-      } else {
-        setImportMsg("No pude extraer la receta de este link. Probá con 'Pegar texto' o con otro link.", "error");
-      }
-    }
-  } catch(e) {
-    setImportMsg("No pude leer el link (puede estar bloqueado o caído). Probá 'Pegar texto'.", "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = originalText;
-  }
 }
 
 function importFromText(){
@@ -2095,7 +1886,7 @@ function saveImportedRecipe(){
 }
 
 /* ============================================================
-   FIN V12.2 — IMPORTAR
+   FIN V13 — IMPORTAR
    ============================================================ */
 
 function setView(v){ view = v; document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); }); $("#nav-" + v).classList.add('active'); render(); window.scrollTo({top:0, behavior:"smooth"}); }
