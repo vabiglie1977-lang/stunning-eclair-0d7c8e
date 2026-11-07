@@ -38,7 +38,10 @@
   .btn-icon svg { width: 20px; height: 20px; }
   .btn-add { background-color: var(--accent); color: white; border: none; border-radius: 20px; padding: 12px 20px; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 
-  .voice-fabs { position: fixed; right: 20px; bottom: 100px; display: flex; flex-direction: column; gap: 12px; z-index: 90; }
+  /* ===== FABS DE VOZ Y BOTÓN PARA OCULTARLOS ===== */
+  .voice-fabs { position: fixed; right: 20px; bottom: 100px; display: flex; flex-direction: column; gap: 12px; z-index: 90; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .voice-fabs.hidden { transform: translateX(100px); }
+  
   .voice-fab { width: 56px; height: 56px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 6px 16px rgba(0,0,0,0.2); transition: transform 0.15s ease; }
   .voice-fab svg { width: 26px; height: 26px; }
   .voice-fab:active { transform: scale(0.92); }
@@ -47,6 +50,27 @@
   .voice-fab.recording.add { animation: voicePulse 1s infinite; box-shadow: 0 0 0 0 rgba(61,116,90,0.7); }
   .voice-fab.recording.rem { animation: voicePulse 1s infinite; box-shadow: 0 0 0 0 rgba(182,70,54,0.7); }
   @keyframes voicePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+  .voice-fab-toggle {
+    position: fixed;
+    right: 0;
+    bottom: 145px;
+    width: 32px;
+    height: 48px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-right: none;
+    border-radius: 20px 0 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 89;
+    box-shadow: -4px 0 12px rgba(0,0,0,0.08);
+    color: var(--accent);
+    transition: all 0.3s ease;
+  }
+  .voice-fab-toggle svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
+  .voice-fab-toggle.hidden-state { background: var(--accent); color: white; border-color: var(--accent); }
 
   .voice-banner { position: fixed; left: 50%; bottom: 170px; transform: translateX(-50%) translateY(20px); background: var(--dark); color: white; padding: 12px 20px; border-radius: 14px; font-size: 14px; z-index: 91; max-width: 90%; text-align: center; opacity: 0; pointer-events: none; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
   .voice-banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -233,9 +257,16 @@
   .shop-qty { font-size: 13px; color: var(--muted); }
   .btn-del { background: none; border: none; color: var(--muted); font-size: 20px; padding: 4px; }
 
-  .shop-add-box { display: flex; gap: 8px; margin-bottom: 16px; }
-  .shop-add-box input { flex: 1; min-width: 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; background: var(--card); color: var(--text); }
-  .shop-add-box .btn-add-shop { background: var(--accent); color: white; border: none; border-radius: 12px; padding: 0 18px; font-size: 22px; font-weight: 600; min-width: 48px; }
+  /* ===== NUEVO FORMULARIO DE COMPRAS CON CANTIDADES ===== */
+  .shop-add-box { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; background: var(--card); padding: 12px; border-radius: var(--radius-sm); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+  .shop-add-box .shop-add-row { display: flex; gap: 8px; align-items: stretch; }
+  .shop-add-box input[type="text"] { width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; background: var(--bg); color: var(--text); outline: none; }
+  .shop-add-box input[type="text"]:focus { border-color: var(--accent); }
+  .shop-add-box input[type="number"] { width: 70px; padding: 12px 8px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; background: var(--bg); color: var(--text); text-align: center; outline: none; }
+  .shop-add-box input[type="number"]:focus { border-color: var(--accent); }
+  .shop-add-box select { flex: 1; padding: 12px 8px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; background: var(--bg); color: var(--text); outline: none; }
+  .shop-add-box select:focus { border-color: var(--accent); }
+  .shop-add-box .btn-add-shop { background: var(--accent); color: white; border: none; border-radius: 12px; padding: 0 18px; font-size: 24px; font-weight: 600; min-width: 48px; }
   .shop-add-box .btn-scan-shop { background: var(--accent-light); color: var(--accent); border: none; border-radius: 12px; padding: 0 14px; display: flex; align-items: center; justify-content: center; }
   .shop-add-box .btn-scan-shop svg { width: 22px; height: 22px; }
   #shopScannerBox { position: relative; margin-bottom: 16px; border-radius: 14px; overflow: hidden; background: #000; }
@@ -304,7 +335,12 @@
 
 <main id="view"></main>
 
-<div class="voice-fabs">
+<!-- Botón pestaña para ocultar/mostrar los FABs -->
+<button class="voice-fab-toggle" id="voiceFabToggle" onclick="toggleFabs()">
+  <svg id="fabToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+</button>
+
+<div class="voice-fabs" id="voiceFabsContainer">
   <button class="voice-fab add" id="voiceAddBtn" onclick="startVoice('add')" title="Agregar a lista de compras por voz">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><path d="M12 18v4"/><path d="M8 22h8"/></svg>
   </button>
@@ -313,14 +349,13 @@
   </button>
 </div>
 
-<!-- ===== BANNER DE DONACIÓN ===== -->
+<!-- Banner de donación -->
 <div class="donate-banner" id="donateBanner">
   <span class="donate-icon">☕</span>
   <span class="donate-text">Apoyá Fresco</span>
   <button class="donate-btn" onclick="window.open('https://cafecito.app/alexis7728','_blank')">Donar</button>
   <button class="donate-close" onclick="dismissDonate(event)" title="Cerrar">×</button>
 </div>
-<!-- ===== FIN BANNER DE DONACIÓN ===== -->
 
 <div class="voice-banner" id="voiceBanner"></div>
 
@@ -511,7 +546,7 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V10 - Compras (escribir + escanear) + Traducción + Donación visible', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V10 - FABs colapsables + Compras Manuales con cantidad', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
 const FAMILY_CODE = "heladera-ink-familia";
@@ -577,6 +612,35 @@ function shiftDays(n){ var d = today(); d.setDate(d.getDate()+n); return formatD
 function daysUntil(iso){ return Math.round((parseDay(iso) - today()) / 86400000); }
 function fold(s){ return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim(); }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]); }); }
+
+// ===== Ocultar / Mostrar FABs de voz =====
+function toggleFabs() {
+  const fabs = document.getElementById('voiceFabsContainer');
+  const toggle = document.getElementById('voiceFabToggle');
+  const icon = document.getElementById('fabToggleIcon');
+  const isHidden = fabs.classList.toggle('hidden');
+  toggle.classList.toggle('hidden-state', isHidden);
+  
+  if (isHidden) {
+    icon.innerHTML = '<path d="m15 18-6-6 6-6"/>'; // Flecha izquierda
+  } else {
+    icon.innerHTML = '<path d="m9 18 6-6-6-6"/>'; // Flecha derecha
+  }
+  try { localStorage.setItem('fresco_fabs_hidden', isHidden ? '1' : '0'); } catch(e) {}
+}
+
+function initFabs() {
+  try {
+    if (localStorage.getItem('fresco_fabs_hidden') === '1') {
+      const fabs = document.getElementById('voiceFabsContainer');
+      const toggle = document.getElementById('voiceFabToggle');
+      const icon = document.getElementById('fabToggleIcon');
+      if (fabs) fabs.classList.add('hidden');
+      if (toggle) toggle.classList.add('hidden-state');
+      if (icon) icon.innerHTML = '<path d="m15 18-6-6 6-6"/>';
+    }
+  } catch(e) {}
+}
 
 // ===== Banner de donación =====
 function dismissDonate(ev) {
@@ -1254,16 +1318,35 @@ function receiveShop(){
 
 function addShopManual(){
   var input = $("#shopAddInput");
-  if (!input) return;
-  var raw = input.value.trim();
-  if (!raw) return;
-  var parsed = parseVoiceText(raw);
-  addToShoppingList(parsed.name, parsed.qty, parsed.unit, null);
+  var qtyInput = $("#shopAddQty");
+  var unitSelect = $("#shopAddUnit");
+  if (!input || !qtyInput || !unitSelect) return;
+  
+  var rawName = input.value.trim();
+  if (!rawName) return;
+  
+  var qty = parseFloat(qtyInput.value);
+  if (isNaN(qty) || qty <= 0) qty = 1;
+  var unit = unitSelect.value || "u";
+  
+  var parsed = parseVoiceText(rawName);
+  var finalName = parsed.name; 
+  
+  if (qty === 1 && parsed.qty !== 1 && unit === "u") {
+    qty = parsed.qty;
+    unit = parsed.unit;
+  }
+  
+  addToShoppingList(finalName, qty, unit, null);
   save();
+  
+  input.value = "";
+  qtyInput.value = "1";
+  
   render();
   var newInput = $("#shopAddInput");
   if (newInput) newInput.focus();
-  showToast("✓ " + parsed.name + " agregado");
+  showToast("✓ " + finalName + " (" + qty + " " + unit + ") agregado");
 }
 
 var shopScanStream = null, shopScanTimer = null, shopZxingReader = null, lastShopScan = 0, shopScanBusy = false;
@@ -1354,11 +1437,22 @@ async function onShopScanned(raw){
 
   if (!name) name = "Producto " + code;
 
-  addToShoppingList(name, 1, "u", null);
+  var qtyInput = $("#shopAddQty");
+  var unitSelect = $("#shopAddUnit");
+  var qty = qtyInput ? parseFloat(qtyInput.value) : 1;
+  if (isNaN(qty) || qty <= 0) qty = 1;
+  var unit = unitSelect ? unitSelect.value : "u";
+
+  addToShoppingList(name, qty, unit, null);
   save();
   shopScanBusy = false;
+  
+  var nameInput = $("#shopAddInput");
+  if(nameInput) nameInput.value = "";
+  if(qtyInput) qtyInput.value = "1";
+
   render();
-  showToast("✓ " + name + " agregado");
+  showToast("✓ " + name + " (" + qty + " " + unit + ") agregado");
 }
 
 function addIngredientRow(name, qty, unit){
@@ -1724,11 +1818,18 @@ function render(){
     html += '<div class="shop-header"><h2 class="section-title serif" style="margin:0">Compras</h2>' + (pend.length > 0 ? '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-order-main" onclick="openOrderModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>Comprar</button><button class="btn-share-main" onclick="openShareModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>Compartir</button></div>' : '') + '</div>';
 
     html += '<div class="shop-add-box">' +
-      '<input type="text" id="shopAddInput" placeholder="Ej: 2 litros de leche" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addShopManual()}">' +
-      '<button class="btn-add-shop" onclick="addShopManual()" title="Agregar">+</button>' +
-      '<button class="btn-scan-shop" onclick="toggleShopScanner()" title="Escanear código">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8V6a2 2 0 012-2h2M16 4h2a2 2 0 012 2v2M20 16v2a2 2 0 01-2 2h-2M8 20H6a2 2 0 01-2-2v-2M7 9v6M10 9v6M13 9v6M17 9v6"/></svg>' +
-      '</button>' +
+      '<input type="text" id="shopAddInput" placeholder="¿Qué falta? Ej: Leche" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addShopManual()}">' +
+      '<div class="shop-add-row">' +
+        '<input type="number" id="shopAddQty" value="1" min="0" step="any" placeholder="Cant">' +
+        '<select id="shopAddUnit">' +
+          '<option value="u">Unidades</option><option value="g">Gramos</option><option value="kg">Kilos</option>' +
+          '<option value="ml">Mililitros</option><option value="L">Litros</option>' +
+        '</select>' +
+        '<button class="btn-add-shop" onclick="addShopManual()" title="Agregar">+</button>' +
+        '<button class="btn-scan-shop" onclick="toggleShopScanner()" title="Escanear código">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8V6a2 2 0 012-2h2M16 4h2a2 2 0 012 2v2M20 16v2a2 2 0 01-2 2h-2M8 20H6a2 2 0 01-2-2v-2M7 9v6M10 9v6M13 9v6M17 9v6"/></svg>' +
+        '</button>' +
+      '</div>' +
     '</div>' +
     '<div id="shopScannerBox" style="display:none"><video id="shopScanVideo" playsinline muted></video><button class="scan-close" onclick="stopShopScanner()">Cerrar</button></div>';
 
@@ -1752,6 +1853,7 @@ initFirebase();
 updateSyncStatus();
 setView('hoy');
 initDonateBanner();
+initFabs();
 </script>
 </body>
 </html>
