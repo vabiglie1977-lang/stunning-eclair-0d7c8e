@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V20 — Despensa de casa</title>
+<title>Fresco V21 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -239,7 +239,6 @@
   .aisle-header { font-family: 'DM Serif Display', serif; font-size: 18px; margin: 20px 0 8px; color: var(--text); border-bottom: 1px solid var(--line); padding-bottom: 4px; }
   .aisle-header:first-child { margin-top: 8px; }
 
-  /* V20: Buscador local de recetas */
   .local-recipe-search {
     background: var(--card);
     border: 1px solid var(--line);
@@ -265,7 +264,6 @@
     color: var(--muted);
   }
 
-  /* V19: Modo Cocina + Temporizador */
   .cooking-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: var(--bg); z-index: 1000; display: none; flex-direction: column;
@@ -353,13 +351,20 @@
   .import-msg.info { color: var(--muted); }
   .import-preview { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
   .ai-loading { font-size: 14px; text-align: center; color: var(--accent); font-weight: 600; padding: 20px; animation: pulse 1.5s infinite; }
+
+  /* V21: Modal Family Setup */
+  .family-option-btn { display: flex; align-items: center; gap: 14px; padding: 18px; border: 1px solid var(--line); background: var(--card); border-radius: 16px; text-align: left; width: 100%; margin-bottom: 10px; }
+  .family-option-btn:active { background: var(--bg); }
+  .family-option-btn .family-icon { font-size: 28px; flex-shrink: 0; }
+  .family-option-btn .family-title { font-weight: 600; font-size: 15px; color: var(--text); margin-bottom: 2px; }
+  .family-option-btn .family-sub { font-size: 12px; color: var(--muted); line-height: 1.4; }
 </style>
 </head>
 <body>
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V20</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V21</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -391,6 +396,62 @@
 
 <div class="voice-banner" id="voiceBanner"></div>
 
+<!-- V21: Modal de Configuración de Familia (primera vez) -->
+<div class="modal-overlay" id="familySetupModal">
+  <div class="modal-content">
+    <h2 class="serif" style="margin-bottom: 8px;">¿Cómo vas a usar Fresco?</h2>
+    <p style="font-size: 13px; color: var(--muted); margin: 0 0 20px;">Podés cambiarlo después en Ajustes</p>
+
+    <div id="familySetupOptions">
+      <button class="family-option-btn" onclick="setupLocalOnly()">
+        <span class="family-icon">📱</span>
+        <div>
+          <div class="family-title">Solo en este celular</div>
+          <div class="family-sub">Los datos se guardan acá. No se comparten con nadie más.</div>
+        </div>
+      </button>
+      
+      <button class="family-option-btn" onclick="showFamilyCodeForm()">
+        <span class="family-icon">👨‍👩‍👧</span>
+        <div>
+          <div class="family-title">Compartir con mi familia</div>
+          <div class="family-sub">Todos los dispositivos con el mismo código ven los mismos datos.</div>
+        </div>
+      </button>
+    </div>
+
+    <div id="familyCodeForm" style="display:none;">
+      <div id="legacyHint" style="display:none; background: var(--accent-light); padding: 12px; border-radius: 10px; font-size: 12px; color: var(--accent); margin-bottom: 14px;">
+        💡 Detectamos que ya usabas Fresco. Tu código anterior era <strong>heladera-ink-familia</strong>. Ingresalo abajo para recuperar tus datos.
+      </div>
+      <p style="font-size: 13px; color: var(--muted); margin: 0 0 12px;">Elegí un código secreto. Todos los miembros de tu familia lo van a necesitar en sus celulares.</p>
+      <div class="form-group">
+        <label>Código familiar</label>
+        <input type="text" id="newFamilyCodeInput" placeholder="Ej: familia-gomez-2024" autocomplete="off" autocapitalize="off" autocorrect="off">
+      </div>
+      <p style="font-size: 11px; color: var(--warn); margin: 0 0 14px;">⚠️ Cualquiera con este código va a poder ver y modificar los datos. No lo compartas con extraños.</p>
+      <button class="btn-add btn-block" style="justify-content:center;" onclick="confirmFamilyCode()">Activar sincronización</button>
+      <button class="btn-block" style="background: transparent; border: none; color: var(--muted); margin-top: 0;" onclick="backToSetupOptions()">← Volver</button>
+    </div>
+  </div>
+</div>
+
+<!-- V21: Modal de Ajustes de Familia -->
+<div class="modal-overlay" id="familySettingsModal" onclick="if(event.target===this)closeFamilySettings()">
+  <div class="modal-content">
+    <h2 class="serif" style="margin-bottom: 12px;">Familia y Sincronización</h2>
+    <div id="familySettingsInfo" style="background: var(--bg); padding: 16px; border-radius: 14px; margin-bottom: 20px; font-size: 14px; border: 1px solid var(--line);"></div>
+
+    <div class="form-group">
+      <label id="familySettingsLabel">Cambiar código familiar</label>
+      <input type="text" id="changeFamilyCodeInput" placeholder="Nuevo código" autocomplete="off" autocapitalize="off" autocorrect="off">
+    </div>
+    <button class="btn-add btn-block" style="justify-content:center;" onclick="changeFamilyCode()" id="familySettingsChangeBtn">Cambiar código</button>
+    <button class="btn-block" style="background: transparent; color: var(--danger); border: 1px solid var(--line); margin-top: 8px;" onclick="goLocalOnly()" id="familySettingsLocalBtn">📱 Dejar de sincronizar (solo local)</button>
+    <button class="btn-block" style="background: transparent; border: none; color: var(--muted); margin-top: 0;" onclick="closeFamilySettings()">Cerrar</button>
+  </div>
+</div>
+
 <!-- Pantalla de Modo Cocina -->
 <div class="cooking-overlay" id="cookingOverlay">
   <div class="cooking-header">
@@ -399,25 +460,21 @@
   </div>
   
   <div class="cooking-content">
-    <!-- Ingredientes -->
     <div class="cooking-ingredients">
       <h3>Ingredientes</h3>
       <div id="cookingIngredientsList"></div>
     </div>
 
-    <!-- Paso Actual -->
     <div class="cooking-step-box">
       <div class="cooking-step-number" id="cookingStepNumber">Paso 1</div>
       <div class="cooking-step-text" id="cookingStepText">...</div>
       
-      <!-- Botón de Temporizador -->
       <button class="cooking-timer-btn" id="cookingTimerBtn" onclick="toggleCookingTimer()">
         <span>⏱️</span> <span id="cookingTimerLabel">Iniciar</span>
       </button>
     </div>
   </div>
 
-  <!-- Botones -->
   <div class="cooking-footer" id="cookingFooter">
     <button class="cooking-btn cooking-btn-prev" id="cookingPrevBtn" onclick="prevCookingStep()" disabled>← Anterior</button>
     <button class="cooking-btn cooking-btn-next" id="cookingNextBtn" onclick="nextCookingStep()">Siguiente →</button>
@@ -570,6 +627,16 @@
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 20px;">Ajustes</h2>
     <div class="settings-row"><div><div class="label">Sincronización</div><div class="sub" id="syncStatusText">Iniciando…</div></div></div>
+    
+    <!-- V21: Familia -->
+    <div class="settings-row">
+      <div>
+        <div class="label">Familia y Sincronización</div>
+        <div class="sub" id="familySettingsSub">...</div>
+      </div>
+      <button class="btn-small primary" onclick="openFamilySettings()">Configurar</button>
+    </div>
+    
     <div class="settings-row">
       <div>
         <div class="label">Modo oscuro</div>
@@ -601,7 +668,7 @@
     <p>Tu privacidad es importante. La aplicación funciona de la siguiente manera:</p>
     <ul>
       <li><strong>Datos Locales:</strong> La información se guarda en la memoria de tu propio dispositivo (navegador).</li>
-      <li><strong>Sincronización en la Nube:</strong> Si la función está activa, los datos se sincronizan en una base de datos privada (Firebase) asociada a tu código familiar.</li>
+      <li><strong>Código Familiar:</strong> Si activás la sincronización, los datos se guardan en una base de datos en la nube asociada a tu código familiar. Solo quienes conozcan el código pueden ver los datos.</li>
       <li><strong>No compartimos tus datos:</strong> No recolectamos, vendemos ni compartimos tu información personal con terceros.</li>
     </ul>
     <h4>3. Uso de Servicios de Terceros</h4>
@@ -617,9 +684,10 @@
       <li>Alimentos vencidos, ya que las fechas dependen del usuario.</li>
       <li>Información nutricional incorrecta proveniente de bases de datos externas.</li>
       <li>Recetas generadas por IA: verificá siempre los ingredientes antes de cocinar.</li>
+      <li>Elección de un código familiar débil: usá un código difícil de adivinar.</li>
     </ul>
     <h4>5. Seguridad</h4>
-    <p>Te recomendamos no compartir tu base de datos de Firebase ni las reglas de configuración.</p>
+    <p>El código familiar funciona como contraseña. Guardalo en un lugar seguro y no lo compartas con personas ajenas a tu familia.</p>
     <button type="button" class="btn-add btn-block" style="margin-top: 24px; justify-content:center" onclick="closeLegal()">Entendido</button>
   </div>
 </div>
@@ -694,14 +762,16 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V20 - Buscador y Agrupador de Recetas', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V21 - Código Familiar y Modo Local', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
-const FAMILY_CODE = "heladera-ink-familia";
-const STORAGE_KEY = "fresco_ui_v20";
+const STORAGE_KEY = "fresco_ui_v21";
+const LOCAL_ONLY_CODE = "_local_only_";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
 let fbDb = null, fbConnected = false, fbReady = false, skipCloudWrite = false, cloudWriteTimer = null;
+let fbListener = null;
+let currentFamilyCode = null;
 
 function initFirebase(){
   if(!isFirebaseConfigured()) return;
@@ -709,12 +779,18 @@ function initFirebase(){
     firebase.initializeApp(FIREBASE_CONFIG);
     fbDb = firebase.database();
     fbDb.ref(".info/connected").on("value", function(s){ fbConnected = s.val() === true; updateSyncStatus(); });
-    startCloudSync();
   } catch(e){ console.error(e); }
 }
+
 function startCloudSync(){
-  if(!fbDb) return;
-  fbDb.ref("fresco/" + FAMILY_CODE + "/state").on("value", function(snap){
+  if(!fbDb || !currentFamilyCode || currentFamilyCode === LOCAL_ONLY_CODE) {
+    updateSyncStatus();
+    return;
+  }
+  if (fbListener) { fbListener.off(); fbListener = null; }
+  fbReady = false;
+  fbListener = fbDb.ref("fresco/" + currentFamilyCode + "/state");
+  fbListener.on("value", function(snap){
     var data = snap.val();
     if(data && Array.isArray(data.items)){
       skipCloudWrite = true; state = data; migrateState(); saveLocal(); render(); skipCloudWrite = false;
@@ -722,17 +798,170 @@ function startCloudSync(){
     fbReady = true; updateSyncStatus();
   });
 }
+
 function pushToCloud(){
   if(skipCloudWrite || !fbDb) return;
+  if(!currentFamilyCode || currentFamilyCode === LOCAL_ONLY_CODE) return;
   clearTimeout(cloudWriteTimer);
-  cloudWriteTimer = setTimeout(function(){ if(fbDb) fbDb.ref("fresco/" + FAMILY_CODE + "/state").set(state).catch(function(e){ console.error(e); }); }, 350);
+  cloudWriteTimer = setTimeout(function(){
+    if(fbDb) fbDb.ref("fresco/" + currentFamilyCode + "/state").set(state).catch(function(e){ console.error(e); });
+  }, 350);
 }
+
 function updateSyncStatus(){
   var dot = $("#syncDot"), text = $("#syncStatusText");
   if(!isFirebaseConfigured()){ if(dot) dot.className = "sync-dot local"; if(text) text.textContent = "Solo local"; return; }
-  if(!fbConnected){ if(dot) dot.className = "sync-dot offline"; if(text) text.textContent = "Sin conexión"; }
-  else if(!fbReady){ if(dot) dot.className = "sync-dot syncing"; if(text) text.textContent = "Conectando…"; }
-  else { if(dot) dot.className = "sync-dot online"; if(text) text.textContent = "Online · sincronizado"; }
+  if(!currentFamilyCode || currentFamilyCode === LOCAL_ONLY_CODE){
+    if(dot) dot.className = "sync-dot local";
+    if(text) text.textContent = "📱 Solo en este celular";
+    return;
+  }
+  if(!fbConnected){ if(dot) dot.className = "sync-dot offline"; if(text) text.textContent = "☁️ Sin conexión"; }
+  else if(!fbReady){ if(dot) dot.className = "sync-dot syncing"; if(text) text.textContent = "☁️ Conectando…"; }
+  else { if(dot) dot.className = "sync-dot online"; if(text) text.textContent = "☁️ " + currentFamilyCode; }
+}
+
+function updateFamilySettingsSub(){
+  var el = document.getElementById('familySettingsSub');
+  if (!el) return;
+  if (currentFamilyCode === LOCAL_ONLY_CODE || !currentFamilyCode) {
+    el.textContent = "📱 Solo en este celular";
+  } else {
+    el.textContent = "👨‍👩‍👧 Código: " + currentFamilyCode;
+  }
+}
+
+function getSavedCode(){
+  try { return localStorage.getItem('fresco_family_code'); } catch(e){ return null; }
+}
+function saveCode(c){
+  try { localStorage.setItem('fresco_family_code', c); } catch(e){}
+}
+
+function initFamily(){
+  var saved = getSavedCode();
+  if(!saved){
+    var hasExistingData = state.items && state.items.length > 0;
+    setTimeout(function(){
+      $("#familySetupModal").classList.add("active");
+      if (hasExistingData) {
+        var legacyHint = document.getElementById('legacyHint');
+        if (legacyHint) legacyHint.style.display = 'block';
+        var inp = document.getElementById('newFamilyCodeInput');
+        if (inp) inp.value = 'heladera-ink-familia';
+      }
+    }, 400);
+  } else {
+    currentFamilyCode = saved;
+    if (currentFamilyCode !== LOCAL_ONLY_CODE) {
+      startCloudSync();
+    } else {
+      updateSyncStatus();
+    }
+  }
+  updateFamilySettingsSub();
+}
+
+function setupLocalOnly(){
+  currentFamilyCode = LOCAL_ONLY_CODE;
+  saveCode(LOCAL_ONLY_CODE);
+  $("#familySetupModal").classList.remove("active");
+  updateSyncStatus();
+  updateFamilySettingsSub();
+  showToast("✓ Modo local activado");
+}
+
+function showFamilyCodeForm(){
+  $("#familySetupOptions").style.display = 'none';
+  $("#familyCodeForm").style.display = 'block';
+  var inp = document.getElementById('newFamilyCodeInput');
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function backToSetupOptions(){
+  $("#familySetupOptions").style.display = 'block';
+  $("#familyCodeForm").style.display = 'none';
+  var inp = document.getElementById('newFamilyCodeInput');
+  if (inp) inp.value = '';
+  var hint = document.getElementById('legacyHint');
+  if (hint) hint.style.display = 'none';
+}
+
+function confirmFamilyCode(){
+  var code = (document.getElementById('newFamilyCodeInput').value || '').trim().toLowerCase();
+  if (code.length < 4) { alert("El código debe tener al menos 4 caracteres"); return; }
+  if (!/^[a-z0-9_-]+$/.test(code)) { alert("Solo letras (a-z), números, guiones y guiones bajos"); return; }
+
+  currentFamilyCode = code;
+  saveCode(code);
+  $("#familySetupModal").classList.remove("active");
+  startCloudSync();
+  updateFamilySettingsSub();
+  showToast("✓ Sincronización activada con: " + code);
+}
+
+function openFamilySettings(){
+  var info = document.getElementById('familySettingsInfo');
+  var isLocal = (currentFamilyCode === LOCAL_ONLY_CODE || !currentFamilyCode);
+  if (isLocal) {
+    info.innerHTML = '<strong>📱 Solo en este celular</strong><br><span style="color:var(--muted);">Los datos no se sincronizan con otros dispositivos.</span>';
+    document.getElementById('familySettingsLabel').textContent = 'Activar sincronización';
+    document.getElementById('familySettingsChangeBtn').textContent = 'Activar con este código';
+    document.getElementById('familySettingsLocalBtn').style.display = 'none';
+  } else {
+    info.innerHTML = '<strong>👨‍👩‍👧 Compartiendo con la familia</strong><br><span style="color:var(--muted);">Código:</span> <code style="background:var(--card); padding:2px 8px; border-radius:6px;">' + esc(currentFamilyCode) + '</code><br><small style="color:var(--muted);">Todos los dispositivos con este código ven los mismos datos.</small>';
+    document.getElementById('familySettingsLabel').textContent = 'Cambiar código familiar';
+    document.getElementById('familySettingsChangeBtn').textContent = 'Cambiar código';
+    document.getElementById('familySettingsLocalBtn').style.display = 'block';
+  }
+  document.getElementById('changeFamilyCodeInput').value = '';
+  $("#familySettingsModal").classList.add("active");
+}
+
+function closeFamilySettings(){
+  $("#familySettingsModal").classList.remove("active");
+}
+
+function changeFamilyCode(){
+  var newCode = (document.getElementById('changeFamilyCodeInput').value || '').trim().toLowerCase();
+  if (newCode.length < 4) { alert("El código debe tener al menos 4 caracteres"); return; }
+  if (!/^[a-z0-9_-]+$/.test(newCode)) { alert("Solo letras, números, guiones y guiones bajos"); return; }
+  if (newCode === currentFamilyCode) { alert("Es el mismo código"); return; }
+
+  var isCurrentlyLocal = (currentFamilyCode === LOCAL_ONLY_CODE || !currentFamilyCode);
+  var msg;
+  if (isCurrentlyLocal) {
+    msg = "Vas a activar la sincronización con el código:\n\n'" + newCode + "'\n\n" +
+          "• Si el código ya tiene datos en la nube, se van a bajar a este celular.\n" +
+          "• Si el código está vacío, tus datos actuales se van a subir.\n\n" +
+          "¿Continuar?";
+  } else {
+    msg = "Vas a cambiar al código:\n\n'" + newCode + "'\n\n" +
+          "⚠️ Si el código nuevo ya tiene datos, van a reemplazar los de este celular.\n" +
+          "Si el código nuevo está vacío, tus datos se van a subir.\n\n" +
+          "¿Continuar?";
+  }
+  if (!confirm(msg)) return;
+
+  currentFamilyCode = newCode;
+  saveCode(newCode);
+  closeFamilySettings();
+  startCloudSync();
+  updateFamilySettingsSub();
+  showToast("✓ Sincronización activada con: " + newCode);
+}
+
+function goLocalOnly(){
+  if (!confirm("Los datos van a dejar de sincronizarse con la nube.\n\nLos datos actuales siguen guardados en este celular, pero no vas a ver cambios de otros dispositivos.\n\n¿Continuar?")) return;
+
+  if (fbListener) { fbListener.off(); fbListener = null; }
+  currentFamilyCode = LOCAL_ONLY_CODE;
+  saveCode(LOCAL_ONLY_CODE);
+  fbReady = false;
+  closeFamilySettings();
+  updateSyncStatus();
+  updateFamilySettingsSub();
+  showToast("✓ Modo local activado");
 }
 
 const ZONES = [{id:"top",label:"Arriba"},{id:"middle",label:"Medio"},{id:"bottom",label:"Abajo"},{id:"crisper",label:"Cajón"},{id:"door",label:"Puerta"}];
@@ -1032,7 +1261,6 @@ function estimateServings(recipe, scale){
   recipe.needs.forEach(function(needStr){
     var ing = parseIngredient(needStr);
     if (ing.qty) ing.qty = ing.qty * scale;
-    
     var stock = state.items.find(function(it){ return matchesNeed(it.name, ing.name); });
     if(!stock){ missing++; det.push({ name: ing.name, missing: true }); return; }
     if(ing.qty && ing.unit) comp.push({ ing: ing, stock: stock });
@@ -1083,7 +1311,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v20","fresco_ui_v19","fresco_ui_v18","fresco_ui_v17","fresco_ui_v16"].forEach(function(k){
+["fresco_ui_v21","fresco_ui_v20","fresco_ui_v19","fresco_ui_v18","fresco_ui_v17"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -1169,6 +1397,7 @@ function openEditModal(id){
 
 function openSettings(){
   updateSyncStatus();
+  updateFamilySettingsSub();
   var el = document.getElementById('darkModeToggle');
   if(el){ try { el.checked = localStorage.getItem('fresco_dark') === '1'; } catch(e){} }
   $("#settingsModal").classList.add("active");
@@ -1200,7 +1429,10 @@ function resetApp(){
   if(!confirm("¿Borrar TODO?")) return;
   if(!confirm("También la nube. ¿Confirmás?")) return;
   var empty = { items:[], shop:[], doorOpen:false, filterChangedAt:shiftDays(-18), recipes:[], products:{}, hiddenRecipes:[], history:[] };
-  if(fbDb){ skipCloudWrite = true; fbDb.ref("fresco/" + FAMILY_CODE + "/state").set(empty).then(function(){ setTimeout(function(){ skipCloudWrite = false; }, 800); }).catch(function(){ skipCloudWrite = false; }); }
+  if(fbDb && currentFamilyCode && currentFamilyCode !== LOCAL_ONLY_CODE){
+    skipCloudWrite = true;
+    fbDb.ref("fresco/" + currentFamilyCode + "/state").set(empty).then(function(){ setTimeout(function(){ skipCloudWrite = false; }, 800); }).catch(function(){ skipCloudWrite = false; });
+  }
   state = empty;
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
   closeSettings(); render(); showToast('✓ Todo borrado');
@@ -1747,7 +1979,6 @@ function cookRecipe(recipeId, isCustom, scale){
   r.needs.forEach(function(needStr){
     var ing = parseIngredient(needStr);
     if(ing.qty) ing.qty = ing.qty * scale;
-    
     var stock = state.items.find(function(it){ return matchesNeed(it.name, ing.name); });
     if(!stock) return;
     var needQty = ing.qty;
@@ -1772,10 +2003,6 @@ function cookRecipe(recipeId, isCustom, scale){
     showToast('✓ Stock restaurado');
   });
 }
-
-/* ============================================================
-   V19 — MODO COCINA + TEMPORIZADOR
-   ============================================================ */
 
 var cookingRecipeData = null;
 var cookingCurrentStep = 0;
@@ -1804,20 +2031,9 @@ function openCookingMode(recipeId, isCustom, scale) {
     r = bi || state.recipes.find(function(x){ return x.id === recipeId; });
   }
   if(!r) return;
-  
-  if(!r.steps || r.steps.length === 0) {
-    showToast("Esta receta no tiene pasos guardados.");
-    return;
-  }
+  if(!r.steps || r.steps.length === 0) { showToast("Esta receta no tiene pasos guardados."); return; }
 
-  cookingRecipeData = {
-    id: r.id,
-    name: r.name,
-    steps: r.steps,
-    needs: r.needs,
-    scale: scale || 1,
-    isCustom: isCustom
-  };
+  cookingRecipeData = { id: r.id, name: r.name, steps: r.steps, needs: r.needs, scale: scale || 1, isCustom: isCustom };
   cookingCurrentStep = 0;
   stopCookingTimer();
   
@@ -1837,19 +2053,15 @@ function openCookingMode(recipeId, isCustom, scale) {
   $("#cookingIngredientsList").innerHTML = ingHtml;
   
   renderCookingStep();
-  
   $("#cookingOverlay").classList.add("active");
-  
   requestWakeLock();
 }
 
 function renderCookingStep() {
   if(!cookingRecipeData) return;
   var steps = cookingRecipeData.steps;
-  
   $("#cookingStepNumber").textContent = "Paso " + (cookingCurrentStep + 1) + " de " + steps.length;
   $("#cookingStepText").textContent = steps[cookingCurrentStep];
-  
   $("#cookingPrevBtn").disabled = (cookingCurrentStep === 0);
   
   var nextBtn = $("#cookingNextBtn");
@@ -1884,31 +2096,18 @@ function renderCookingStep() {
   }
 }
 
-function toggleCookingTimer() {
-  if (isTimerRunning) {
-    stopCookingTimer();
-  } else {
-    startCookingTimer();
-  }
-}
+function toggleCookingTimer() { if (isTimerRunning) stopCookingTimer(); else startCookingTimer(); }
 
 function startCookingTimer() {
   if (timerRemaining <= 0) return;
   isTimerRunning = true;
-  
   var timerBtn = $("#cookingTimerBtn");
   timerBtn.classList.add("active");
-  
   timerInterval = setInterval(function() {
     timerRemaining--;
     updateTimerDisplay();
-    
-    if (timerRemaining <= 0) {
-      stopCookingTimer();
-      playTimerAlarm();
-    }
+    if (timerRemaining <= 0) { stopCookingTimer(); playTimerAlarm(); }
   }, 1000);
-  
   updateTimerDisplay();
 }
 
@@ -1916,7 +2115,6 @@ function stopCookingTimer() {
   isTimerRunning = false;
   clearInterval(timerInterval);
   timerInterval = null;
-  
   var timerBtn = $("#cookingTimerBtn");
   if (timerBtn) {
     timerBtn.classList.remove("active");
@@ -1935,39 +2133,24 @@ function updateTimerDisplay() {
   var mins = Math.floor(timerRemaining / 60);
   var secs = timerRemaining % 60;
   var display = (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
-  
   $("#cookingTimerLabel").innerHTML = '<span class="cooking-timer-display">' + display + '</span> <span style="font-size:12px; opacity:0.8; margin-left:8px;">(Tocar para parar)</span>';
 }
 
 function playTimerAlarm() {
-  if (navigator.vibrate) {
-    navigator.vibrate([500, 200, 500, 200, 500]);
-  }
-  
+  if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
   try {
     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     var oscillator = audioCtx.createOscillator();
     var gainNode = audioCtx.createGain();
-    
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    
     oscillator.type = 'sine';
     oscillator.frequency.value = 800;
     gainNode.gain.value = 1;
-    
     oscillator.start();
-    
-    setTimeout(function() {
-      oscillator.stop();
-      audioCtx.close();
-    }, 1000);
-  } catch(e) {
-    console.log("No se pudo reproducir el sonido", e);
-  }
-
+    setTimeout(function() { oscillator.stop(); audioCtx.close(); }, 1000);
+  } catch(e) {}
   alert("⏱️ ¡Tiempo terminado!");
-  
   if (cookingRecipeData) {
     var mins = extractTimeFromText(cookingRecipeData.steps[cookingCurrentStep]);
     if (mins > 0) {
@@ -1978,48 +2161,20 @@ function playTimerAlarm() {
   }
 }
 
-function nextCookingStep() {
-  if(!cookingRecipeData) return;
-  if(cookingCurrentStep < cookingRecipeData.steps.length - 1) {
-    cookingCurrentStep++;
-    renderCookingStep();
-  }
-}
-
-function prevCookingStep() {
-  if(!cookingRecipeData) return;
-  if(cookingCurrentStep > 0) {
-    cookingCurrentStep--;
-    renderCookingStep();
-  }
-}
+function nextCookingStep() { if(cookingRecipeData && cookingCurrentStep < cookingRecipeData.steps.length - 1) { cookingCurrentStep++; renderCookingStep(); } }
+function prevCookingStep() { if(cookingRecipeData && cookingCurrentStep > 0) { cookingCurrentStep--; renderCookingStep(); } }
 
 function finishCookingMode() {
   if(!cookingRecipeData) return;
   if(confirm("¿Ya cocinaste? Se descontarán los ingredientes del stock.")) {
-    var id = cookingRecipeData.id;
-    var isCustom = cookingRecipeData.isCustom;
-    var scale = cookingRecipeData.scale;
+    var id = cookingRecipeData.id, isCustom = cookingRecipeData.isCustom, scale = cookingRecipeData.scale;
     closeCookingMode();
     cookRecipe(id, isCustom, scale);
   }
 }
 
-async function requestWakeLock() {
-  try {
-    if ('wakeLock' in navigator) {
-      wakeLock = await navigator.wakeLock.request('screen');
-    }
-  } catch (err) {
-    console.log('Wake Lock error:', err);
-  }
-}
-
-function releaseWakeLock() {
-  if (wakeLock !== null) {
-    wakeLock.release().then(() => { wakeLock = null; });
-  }
-}
+async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
+function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => { wakeLock = null; }); } }
 
 function closeCookingMode() {
   stopCookingTimer();
@@ -2029,30 +2184,14 @@ function closeCookingMode() {
   cookingCurrentStep = 0;
 }
 
-/* ============================================================
-   FIN V19 — MODO COCINA + TEMPORIZADOR
-   ============================================================ */
-
 var view = "hoy", selectedDay = 0, stockQuery = "", cookableOnly = false;
 var recipeQuery = "", recipeUseStock = false, recipeResults = [], recipeBusy = false, recipeMsg = "", recipeMsgError = false;
 var recipeScales = {}; 
-var localRecipeQuery = ""; // V20
+var localRecipeQuery = "";
 
-function setRecipeScale(id, scale) {
-  recipeScales[id] = scale;
-  render();
-}
+function setRecipeScale(id, scale) { recipeScales[id] = scale; render(); }
+function setLocalRecipeQuery(val) { localRecipeQuery = val; render(); var inp = $("#localRecipeSearchInput"); if(inp){ inp.focus(); inp.setSelectionRange(val.length, val.length); } }
 
-function setLocalRecipeQuery(val) {
-  localRecipeQuery = val;
-  render();
-  var inp = $("#localRecipeSearchInput");
-  if(inp){ inp.focus(); inp.setSelectionRange(val.length, val.length); }
-}
-
-/* ============================================================
-   V20 — BUSCADOR Y AGRUPADOR DE RECETAS
-   ============================================================ */
 function getRecipeCategory(recipe) {
   var txt = fold(recipe.name + " " + (recipe.needs || []).join(" "));
   if (/\b(pollo|pechuga|muslo|alita|poultr|chicken)\b/.test(txt)) return { name: "🍗 Pollo", order: 1 };
@@ -2064,10 +2203,6 @@ function getRecipeCategory(recipe) {
   if (/\b(huevo|omelette|tortilla)\b/.test(txt)) return { name: "🥚 Huevos", order: 7 };
   return { name: "🍲 Otras recetas", order: 8 };
 }
-
-/* ============================================================
-   FIN V20 — BUSCADOR Y AGRUPADOR
-   ============================================================ */
 
 let translateFailures = 0;
 
@@ -2158,9 +2293,6 @@ async function searchRecipes(){
     recipeResults = detailed;
     recipeMsg = detailed.length ? "" : "Sin resultados";
     recipeMsgError = !detailed.length;
-    if (detailed.length && translateFailures > 0) {
-      showToast("⚠️ Algunos textos no se tradujeron (bloqueador o red)");
-    }
   } catch(e){
     recipeMsgError = true;
     recipeMsg = e.code === "empty_stock" ? "Cargá algo primero." : "Error de conexión.";
@@ -2186,22 +2318,13 @@ function openImportModal(){
   $("#importMsg").textContent = "";
   $("#importPreview").style.display = "none";
 }
-function closeImportModal(){
-  $("#importRecipeModal").classList.remove("active");
-  importedRecipePreview = null;
-}
-
-function setImportMsg(text, kind){
-  var el = $("#importMsg");
-  el.textContent = text;
-  el.className = "import-msg " + (kind || "info");
-}
+function closeImportModal(){ $("#importRecipeModal").classList.remove("active"); importedRecipePreview = null; }
+function setImportMsg(text, kind){ var el = $("#importMsg"); el.textContent = text; el.className = "import-msg " + (kind || "info"); }
 
 function importFromText(){
   var text = ($("#importText").value || "").trim();
   if (!text) { setImportMsg("Pegá el texto de la receta primero", "error"); return; }
   if (text.length < 20) { setImportMsg("El texto es muy corto. Pegá la receta completa.", "error"); return; }
-
   var recipe = parseFreeTextRecipe(text);
   if (recipe.needs.length === 0 && recipe.steps.length === 0) {
     setImportMsg("No pude detectar ingredientes ni pasos. Asegurate de tener secciones 'Ingredientes' y 'Preparación'.", "error");
@@ -2214,37 +2337,24 @@ function importFromText(){
 
 function parseFreeTextRecipe(text){
   var lines = text.split(/\r?\n/).map(function(l){ return l.trim(); }).filter(Boolean);
-  var name = "";
-  var minutes = 20;
-  var needs = [];
-  var steps = [];
-  var section = "unknown";
-
+  var name = "", minutes = 20, needs = [], steps = [], section = "unknown";
   var ING_HEAD = /^(ingredientes?|ingredients?|ingredientes\s*:|para\s+la\s+preparaci[oó]n)\s*:?\s*$/i;
   var STEP_HEAD = /^(preparaci[oó]n|procedimiento|pasos?|instrucciones|elaboraci[oó]n|modo\s+de\s+preparaci[oó]n|instructions|steps)\s*:?\s*$/i;
   var TIME_RE = /(\d+)\s*(min|minutos?|minute|m)\b/i;
   var HOUR_RE = /(\d+)\s*(h|hora|horas?|hour)/i;
-
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
     var low = line.toLowerCase().replace(/[#*_]/g, "").trim();
-
     if (ING_HEAD.test(low)) { section = "ingredients"; continue; }
     if (STEP_HEAD.test(low)) { section = "steps"; continue; }
-
     var tm = low.match(TIME_RE);
     if (tm) minutes = Math.max(minutes, parseInt(tm[1], 10));
     var hm = low.match(HOUR_RE);
     if (hm) minutes = Math.max(minutes, parseInt(hm[1], 10) * 60);
-
     if (section === "unknown" && !name && line.length >= 3 && line.length <= 90) {
       var candidate = line.replace(/^(receta|recipe)\s*[:\-–]\s*/i, "").replace(/[#*]/g, "").trim();
-      if (candidate && !TIME_RE.test(candidate)) {
-        name = candidate;
-        continue;
-      }
+      if (candidate && !TIME_RE.test(candidate)) { name = candidate; continue; }
     }
-
     if (section === "ingredients") {
       var cleaned = line.replace(/^[-•*·▪◦]\s*/, "").replace(/^\d+[\.)]\s*/, "").trim();
       if (cleaned) needs.push(cleaned);
@@ -2253,12 +2363,10 @@ function parseFreeTextRecipe(text){
       if (cleanedStep) steps.push(cleanedStep);
     }
   }
-
   if (!name) {
     var firstLine = lines[0].replace(/^(receta|recipe)\s*[:\-–]\s*/i, "").replace(/[#*]/g, "").trim();
     name = firstLine || "Receta importada";
   }
-
   return { name: name, minutes: minutes, needs: needs, steps: steps, imageUrl: null };
 }
 
@@ -2273,22 +2381,15 @@ function showImportPreview(recipe){
 function parseIngredientsLines(lines){
   var result = [];
   lines.forEach(function(line){
-    var t = String(line || "").trim();
-    if (!t) return;
+    var t = String(line || "").trim(); if (!t) return;
     var already = t.match(/^(.+?)\s*\(\s*([\d.,]+)\s*([a-zA-Záéíóúñ³]+)?\s*\)\s*$/);
     if (already) { result.push(t); return; }
     var m = t.match(/^([\d.,]+)\s*(g|gr|grs|gramos?|kg|kilos?|ml|mls|mililitros?|l|lt|litros?|u|un|unidades?)?\s+(.+)$/i);
     if (m) {
       var qty = parseFloat(m[1].replace(",", "."));
-      var unit = (m[2] || "u").toLowerCase()
-        .replace(/gramos?|gr|grs/, "g")
-        .replace(/kilos?|kg/, "kg")
-        .replace(/mililitros?|mls|ml/, "ml")
-        .replace(/litros?|lt|l/, "L")
-        .replace(/unidades?|un|u/, "u");
+      var unit = (m[2] || "u").toLowerCase().replace(/gramos?|gr|grs/, "g").replace(/kilos?|kg/, "kg").replace(/mililitros?|mls|ml/, "ml").replace(/litros?|lt|l/, "L").replace(/unidades?|un|u/, "u");
       var nm = m[3].trim();
-      if (isNaN(qty)) result.push(t);
-      else result.push(nm + " (" + qty + " " + unit + ")");
+      if (isNaN(qty)) result.push(t); else result.push(nm + " (" + qty + " " + unit + ")");
       return;
     }
     result.push(t);
@@ -2304,128 +2405,65 @@ function saveImportedRecipe(){
   var ingLines = ($("#previewIngredients").value || "").split(/\r?\n/).filter(function(s){ return s.trim(); });
   var stepLines = ($("#previewSteps").value || "").split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
   var needs = parseIngredientsLines(ingLines);
-
   if (needs.length === 0) { setImportMsg("Agregá al menos un ingrediente", "error"); return; }
-
   var dup = state.recipes.find(function(r){ return fold(r.name) === fold(name); });
-  if (dup) {
-    if (!confirm("Ya tenés una receta con ese nombre. ¿Reemplazarla?")) return;
-    state.recipes = state.recipes.filter(function(r){ return r !== dup; });
-  }
-
-  state.recipes.push({
-    id: uid(),
-    name: name,
-    minutes: minutes,
-    needs: needs,
-    steps: stepLines,
-    imageUrl: importedRecipePreview.imageUrl || null
-  });
-  save();
-  render();
-  closeImportModal();
+  if (dup) { if (!confirm("Ya tenés una receta con ese nombre. ¿Reemplazarla?")) return; state.recipes = state.recipes.filter(function(r){ return r !== dup; }); }
+  state.recipes.push({ id: uid(), name: name, minutes: minutes, needs: needs, steps: stepLines, imageUrl: importedRecipePreview.imageUrl || null });
+  save(); render(); closeImportModal();
   showToast("✓ Receta importada: " + name);
 }
 
-function openAIModal() {
-  $("#aiRecipeModal").classList.add("active");
-  resetAIModal();
-}
-
-function closeAIModal() {
-  $("#aiRecipeModal").classList.remove("active");
-}
-
+function openAIModal() { $("#aiRecipeModal").classList.add("active"); resetAIModal(); }
+function closeAIModal() { $("#aiRecipeModal").classList.remove("active"); }
 function resetAIModal() {
   $("#aiStepInput").style.display = "block";
   $("#aiStepPreview").style.display = "none";
-  $("#aiPrompt").value = "";
-  $("#aiMsg").textContent = "";
-  $("#aiMsg").className = "import-msg";
-  $("#aiGenerateBtn").disabled = false;
-  $("#aiGenerateBtn").textContent = "Generar receta";
+  $("#aiPrompt").value = ""; $("#aiMsg").textContent = ""; $("#aiMsg").className = "import-msg";
+  $("#aiGenerateBtn").disabled = false; $("#aiGenerateBtn").textContent = "Generar receta";
 }
 
 async function generateAIRecipe() {
   var prompt = ($("#aiPrompt").value || "").trim();
-  if (!prompt) { 
-    $("#aiMsg").textContent = "Escribí qué querés comer"; 
-    $("#aiMsg").className = "import-msg error"; 
-    return; 
-  }
-
+  if (!prompt) { $("#aiMsg").textContent = "Escribí qué querés comer"; $("#aiMsg").className = "import-msg error"; return; }
   var useStock = $("#aiUseStock").checked;
-  var stockList = [];
-  if (useStock) {
-    stockList = state.items.map(function(i) { return i.name + " (" + i.qty + " " + i.unit + ")"; });
-  }
-
-  $("#aiGenerateBtn").disabled = true;
-  $("#aiGenerateBtn").textContent = "Cocinando... 🍳";
-  $("#aiMsg").textContent = "El Chef IA está pensando tu receta (puede tardar unos segundos)...";
-  $("#aiMsg").className = "import-msg info";
-
+  var stockList = useStock ? state.items.map(function(i) { return i.name + " (" + i.qty + " " + i.unit + ")"; }) : [];
+  $("#aiGenerateBtn").disabled = true; $("#aiGenerateBtn").textContent = "Cocinando... 🍳";
+  $("#aiMsg").textContent = "El Chef IA está pensando tu receta..."; $("#aiMsg").className = "import-msg info";
   var fullPrompt = "Eres un chef experto en cocina. Escribe una receta basada en esta petición: '" + prompt + "'. ";
-  if (stockList.length > 0) {
-    fullPrompt += "Intenta usar SOLO o principalmente estos ingredientes disponibles: " + stockList.join(", ") + ". ";
-  }
-  fullPrompt += "Devuelve SOLO un objeto JSON válido (sin bloques markdown, sin texto extra) con esta estructura exacta: " +
-                "{ \"name\": \"Nombre de la receta\", \"minutes\": 20, \"needs\": [\"ingrediente (100 g)\", \"ingrediente (2 u)\"], \"steps\": [\"Paso 1\", \"Paso 2\"] }. " +
-                "Usa español. Los ingredientes deben tener el formato 'nombre (cantidad unidad)'.";
-
+  if (stockList.length > 0) fullPrompt += "Intenta usar SOLO o principalmente estos ingredientes disponibles: " + stockList.join(", ") + ". ";
+  fullPrompt += "Devuelve SOLO un objeto JSON válido (sin bloques markdown) con esta estructura: { \"name\": \"Nombre\", \"minutes\": 20, \"needs\": [\"ingrediente (100 g)\"], \"steps\": [\"Paso 1\"] }. Usa español.";
   try {
     var res = await fetch("https://text.pollinations.ai/" + encodeURIComponent(fullPrompt));
-    if (!res.ok) throw new Error("Error de red");
+    if (!res.ok) throw new Error("Error");
     var text = await res.text();
-    
     var match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("No se encontró JSON válido en la respuesta");
-    
+    if (!match) throw new Error("No JSON");
     var recipe = JSON.parse(match[0]);
-    if (!recipe.name || !recipe.needs || !recipe.steps) throw new Error("JSON incompleto");
-
+    if (!recipe.name || !recipe.needs || !recipe.steps) throw new Error("Incompleto");
     $("#aiPreviewName").value = recipe.name;
     $("#aiPreviewMinutes").value = recipe.minutes || 20;
     $("#aiPreviewIngredients").value = (recipe.needs || []).join("\n");
     $("#aiPreviewSteps").value = (recipe.steps || []).join("\n");
-
-    $("#aiStepInput").style.display = "none";
-    $("#aiStepPreview").style.display = "block";
-    $("#aiMsg").textContent = "✓ Receta generada con éxito";
-    $("#aiMsg").className = "import-msg success";
-
+    $("#aiStepInput").style.display = "none"; $("#aiStepPreview").style.display = "block";
+    $("#aiMsg").textContent = "✓ Receta generada"; $("#aiMsg").className = "import-msg success";
   } catch (e) {
-    console.error(e);
-    $("#aiMsg").textContent = "Hubo un error al generar la receta. Probá de nuevo.";
-    $("#aiMsg").className = "import-msg error";
+    $("#aiMsg").textContent = "Error al generar. Probá de nuevo."; $("#aiMsg").className = "import-msg error";
   } finally {
-    $("#aiGenerateBtn").disabled = false;
-    $("#aiGenerateBtn").textContent = "Generar receta";
+    $("#aiGenerateBtn").disabled = false; $("#aiGenerateBtn").textContent = "Generar receta";
   }
 }
 
 function saveAIRecipe() {
   var name = ($("#aiPreviewName").value || "").trim();
-  if (!name) { alert("Ponele un nombre a la receta"); return; }
+  if (!name) { alert("Ponele un nombre"); return; }
   var minutes = parseInt($("#aiPreviewMinutes").value, 10) || 20;
   var ingLines = ($("#aiPreviewIngredients").value || "").split(/\r?\n/).filter(function(s){ return s.trim(); });
   var stepLines = ($("#aiPreviewSteps").value || "").split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
   var needs = parseIngredientsLines(ingLines);
-
   if (needs.length === 0) { alert("Agregá al menos un ingrediente"); return; }
-
-  state.recipes.push({
-    id: uid(),
-    name: name,
-    minutes: minutes,
-    needs: needs,
-    steps: stepLines,
-    imageUrl: null
-  });
-  save();
-  render();
-  closeAIModal();
-  showToast("✓ Receta del Chef IA guardada: " + name);
+  state.recipes.push({ id: uid(), name: name, minutes: minutes, needs: needs, steps: stepLines, imageUrl: null });
+  save(); render(); closeAIModal();
+  showToast("✓ Receta guardada: " + name);
 }
 
 function setView(v){ view = v; document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); }); $("#nav-" + v).classList.add('active'); render(); window.scrollTo({top:0, behavior:"smooth"}); }
@@ -2473,10 +2511,7 @@ function servingsBlockHtml(r, scale){
   }
   return badge + detail;
 }
-function recipeHeroHtml(r){
-  if(!r.imageUrl) return '';
-  return '<div class="recipe-hero"><img src="' + r.imageUrl + '" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>';
-}
+function recipeHeroHtml(r){ if(!r.imageUrl) return ''; return '<div class="recipe-hero"><img src="' + r.imageUrl + '" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>'; }
 function renderItemRow(i){
   var d = daysUntil(i.expiresAt);
   var cls = d < 0 ? 'danger' : '';
@@ -2502,7 +2537,7 @@ function getAisle(item) {
   if (cat === 'lacteos') return '🥛 Lácteos';
   if (cat === 'congelados') return '🧊 Congelados';
   if (cat === 'bebidas') return '🍷 Bebidas';
-  return '🥫 Almacén'; 
+  return '🥫 Almacén';
 }
 
 function openHistoryModal() {
@@ -2526,9 +2561,7 @@ function openHistoryModal() {
   }
   $("#historyModal").classList.add("active");
 }
-function closeHistoryModal() {
-  $("#historyModal").classList.remove("active");
-}
+function closeHistoryModal() { $("#historyModal").classList.remove("active"); }
 
 function render(){
   stopShopScanner();
@@ -2599,17 +2632,13 @@ function render(){
     }
   }
   else if (view === "recetas") {
-    // Buscador de recetas remotas
     html += '<div class="rs-box"><div class="rs-row"><input type="text" id="recipeQuery" placeholder="Ej. pasta, tarta…" value="' + esc(recipeQuery) + '" onkeydown="if(event.key===\'Enter\')searchRecipes()"><button type="button" onclick="searchRecipes()" ' + (recipeBusy ? 'disabled' : '') + '>' + (recipeBusy ? '...' : 'Buscar') + '</button></div><label class="rs-check"><input type="checkbox" id="recipeStock" ' + (recipeUseStock ? 'checked' : '') + '> Usar lo que tengo</label><div class="rs-note">Recetas de TheMealDB</div></div>';
-    
-    // Botones de acción
     html += '<div style="display:flex; gap:6px; margin-bottom:16px">' +
       '<button class="btn-small primary" style="flex:1; padding:12px 6px; font-size:12px" onclick="openRecipeModal()">+ Crear</button>' +
       '<button class="btn-small" style="flex:1; padding:12px 6px; font-size:12px; background:var(--accent-light); color:var(--accent); border-color:var(--accent-light)" onclick="openImportModal()">📥 Importar</button>' +
       '<button class="btn-small" style="flex:1; padding:12px 6px; font-size:12px; background:#8a2be2; color:white; border-color:#8a2be2" onclick="openAIModal()">🤖 Chef IA</button>' +
       '</div>';
 
-    // Resultados de búsqueda remota
     if (recipeMsg) html += '<p class="rs-msg ' + (recipeMsgError ? 'error' : '') + '">' + esc(recipeMsg) + '</p>';
     if (recipeResults.length) {
       html += '<h3 class="serif rs-title">Resultados</h3>';
@@ -2618,7 +2647,6 @@ function render(){
         var saved = state.recipes.some(function(x){ return fold(x.name) === fold(r.name); });
         var cc = 'recipe-card' + (r.imageUrl ? ' with-hero' : '');
         var untranslatedBadge = (!r.translated) ? '<span class="tag-untranslated">🌐 sin traducir</span>' : '';
-        
         var scaleBar = '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:var(--bg); padding:6px 12px; border-radius:12px; width:fit-content;">' +
                        '<span style="font-size:12px; color:var(--muted); font-weight:600;">Porciones:</span>' +
                        '<button class="scale-btn ' + (scale===0.5?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 0.5)">½</button>' +
@@ -2626,7 +2654,6 @@ function render(){
                        '<button class="scale-btn ' + (scale===2?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 2)">2x</button>' +
                        '<button class="scale-btn ' + (scale===3?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 3)">3x</button>' +
                        '</div>';
-
         var content = '<h3 class="serif">' + esc(r.name) + untranslatedBadge + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.needs.length + ' ingr.</span></div>' + scaleBar + servingsBlockHtml(r, scale) + '<details><summary>Ver pasos</summary><ol>' + r.steps.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ol></details><div class="recipe-actions"><button class="btn-small primary" ' + (saved ? 'disabled' : '') + ' onclick="addRecipe(' + i + ')">' + (saved ? '✓ Guardada' : 'Guardar') + '</button></div>';
         html += '<div class="' + cc + '">' + recipeHeroHtml(r) + '<div class="recipe-content">' + content + '</div></div>';
       });
@@ -2634,7 +2661,6 @@ function render(){
     }
     if(state.hiddenRecipes.length > 0){ html += '<div style="text-align:center; margin-bottom:12px;"><button class="btn-small" onclick="restoreRecipes()">↺ Restaurar (' + state.hiddenRecipes.length + ')</button></div>'; }
 
-    // V20: BUSCADOR LOCAL DE RECETAS
     html += '<div class="local-recipe-search">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>' +
       '<input type="text" id="localRecipeSearchInput" placeholder="Buscar en mis recetas guardadas..." value="' + esc(localRecipeQuery) + '" oninput="setLocalRecipeQuery(this.value)">' +
@@ -2642,45 +2668,29 @@ function render(){
 
     var bi = RECIPES.filter(function(r){ return !state.hiddenRecipes.includes(r.id); });
     var all = bi.concat(state.recipes.map(function(r){ return Object.assign({}, r, {custom:true}); }));
-    
-    // Filtro por buscador local
-    if (localRecipeQuery.trim()) {
-      all = all.filter(function(r){ return fold(r.name).includes(fold(localRecipeQuery)); });
-    }
-
+    if (localRecipeQuery.trim()) all = all.filter(function(r){ return fold(r.name).includes(fold(localRecipeQuery)); });
     var list = all.map(function(r){
       var have = [], missing = [];
       r.needs.forEach(function(n){ if (state.items.some(function(i){ return matchesNeed(i.name, n); })) have.push(n); else missing.push(n); });
       return Object.assign({}, r, {have: have, missing: missing});
     }).filter(function(r){ return r.have.length > 0 || r.custom; });
-    
     if(cookableOnly){ list = list.filter(function(r){ var est = estimateServings(r, recipeScales[r.id] || 1); return est.show && est.count > 0 && est.missingCount === 0; }); }
-    
     list.sort(function(a,b){ return b.have.length - a.have.length; });
 
     if (list.length === 0) { 
-      html += '<div style="text-align:center; padding: 40px 20px; color: var(--muted);">' + 
-        (localRecipeQuery ? 'No encontré recetas con ese nombre.' : 'No hay recetas disponibles.') + 
-        '</div>'; 
+      html += '<div style="text-align:center; padding: 40px 20px; color: var(--muted);">' + (localRecipeQuery ? 'No encontré recetas con ese nombre.' : 'No hay recetas disponibles.') + '</div>'; 
     } else {
-      // V20: Agrupación por tipo de alimento predominante
       var groupedRecipes = {};
       list.forEach(function(r) {
         var cat = getRecipeCategory(r);
         if (!groupedRecipes[cat.name]) groupedRecipes[cat.name] = { order: cat.order, recipes: [] };
         groupedRecipes[cat.name].recipes.push(r);
       });
-
-      var sortedCategories = Object.keys(groupedRecipes).sort(function(a, b) {
-        return groupedRecipes[a].order - groupedRecipes[b].order;
-      });
-
+      var sortedCategories = Object.keys(groupedRecipes).sort(function(a, b) { return groupedRecipes[a].order - groupedRecipes[b].order; });
       sortedCategories.forEach(function(catName) {
         html += '<div class="aisle-header" style="margin-top:24px;">' + catName + '</div>';
-        
         groupedRecipes[catName].recipes.forEach(function(r){
           var scale = recipeScales[r.id] || 1;
-          
           var scaleBar = '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:var(--bg); padding:6px 12px; border-radius:12px; width:fit-content;">' +
                          '<span style="font-size:12px; color:var(--muted); font-weight:600;">Porciones:</span>' +
                          '<button class="scale-btn ' + (scale===0.5?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 0.5)">½</button>' +
@@ -2688,7 +2698,6 @@ function render(){
                          '<button class="scale-btn ' + (scale===2?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 2)">2x</button>' +
                          '<button class="scale-btn ' + (scale===3?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 3)">3x</button>' +
                          '</div>';
-
           var mh = "";
           if (r.missing.length > 0) {
             mh = '<div class="recipe-miss-title">Falta:</div><div class="missing-pills">' + r.missing.map(function(m){
@@ -2697,7 +2706,6 @@ function render(){
               return '<button class="missing-pill ' + (inShop ? 'in-shop' : '') + '" onclick="addMissingToShop(\'' + esc(base) + '\')">' + esc(m) + ' ' + (inShop ? '✓' : '+') + '</button>';
             }).join('') + '</div>';
           } else { mh = '<div class="recipe-have" style="font-weight:600">¡Tenés todo!</div>'; }
-          
           var delBtn = '<button class="btn-del-recipe" onclick="deleteRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ')">×</button>';
           var cc = 'recipe-card' + (r.imageUrl ? ' with-hero' : '');
           var actions = '<div class="recipe-actions" style="margin-top:14px">' +
@@ -2714,7 +2722,6 @@ function render(){
   else if (view === "compras") {
     var done = state.shop.filter(function(l){ return l.done; });
     var pend = state.shop.filter(function(l){ return !l.done; });
-    
     html += '<div class="shop-header">' +
       '<div style="display:flex; align-items:center; gap:8px;">' +
         '<h2 class="section-title serif" style="margin:0">Compras</h2>' +
@@ -2722,7 +2729,6 @@ function render(){
       '</div>' +
       (pend.length > 0 ? '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-order-main" onclick="openOrderModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>Comprar</button><button class="btn-share-main" onclick="openShareModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>Compartir</button></div>' : '') + 
     '</div>';
-
     html += '<div class="shop-add-box">' +
       '<input type="text" id="shopAddInput" placeholder="¿Qué falta? Ej: Leche" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addShopManual()}">' +
       '<div class="shop-add-row">' +
@@ -2741,15 +2747,9 @@ function render(){
 
     if (pend.length > 0) {
       var grouped = {};
-      pend.forEach(function(l){
-        var aisle = getAisle(l);
-        if (!grouped[aisle]) grouped[aisle] = [];
-        grouped[aisle].push(l);
-      });
-
+      pend.forEach(function(l){ var aisle = getAisle(l); if (!grouped[aisle]) grouped[aisle] = []; grouped[aisle].push(l); });
       var aisleOrder = ['🥦 Verdulería', '🥩 Carnicería', '🥛 Lácteos', '🧊 Congelados', '🥫 Almacén', '🍷 Bebidas'];
       var cardHtml = '<div class="zone-card" style="padding: 8px 20px;">';
-      
       aisleOrder.forEach(function(aisle) {
         if (grouped[aisle] && grouped[aisle].length > 0) {
           cardHtml += '<div class="aisle-header">' + aisle + '</div>';
@@ -2761,17 +2761,14 @@ function render(){
           });
         }
       });
-
       if (done.length > 0) {
         cardHtml += '<div class="aisle-header" style="opacity:0.6;">✅ Ya comprados (' + done.length + ')</div>';
         done.forEach(function(l){
           cardHtml += '<div class="shop-row done"><input type="checkbox" checked onchange="toggleShop(\'' + l.id + '\')"><div class="shop-info"><div class="shop-name">' + esc(l.name) + '</div></div><div class="shop-qty">' + (Math.round(l.qty*100)/100) + ' ' + l.unit + '</div><button class="btn-del" onclick="removeShopLine(\'' + l.id + '\')">×</button></div>';
         });
       }
-      
       cardHtml += '</div>';
       html += cardHtml;
-
     } else if (state.shop.length === 0) {
       html += '<div class="zone-card" style="padding: 8px 20px;"><div style="text-align:center; padding: 20px; color: var(--muted);">La lista está vacía.<br><br>Escribí, escaneá o dictá arriba.</div></div>';
     } else if (done.length > 0) {
@@ -2782,15 +2779,16 @@ function render(){
       });
       html += '</div>';
     }
-
     if (done.length > 0) html += '<button class="btn-add btn-block" onclick="receiveShop()">Recibir marcados (' + done.length + ')</button>';
   }
   container.innerHTML = html;
 }
 
+// BOOT
 initFirebase();
 updateSyncStatus();
 initDarkMode();
+initFamily();
 setView('hoy');
 initDonateBanner();
 initVoiceSlider();
