@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V18 — Despensa de casa</title>
+<title>Fresco V19 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -239,7 +239,7 @@
   .aisle-header { font-family: 'DM Serif Display', serif; font-size: 18px; margin: 20px 0 8px; color: var(--text); border-bottom: 1px solid var(--line); padding-bottom: 4px; }
   .aisle-header:first-child { margin-top: 8px; }
 
-  /* V18: Modo Cocina */
+  /* V19: Modo Cocina + Temporizador */
   .cooking-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: var(--bg); z-index: 1000; display: none; flex-direction: column;
@@ -261,6 +261,11 @@
   .cooking-step-number { font-size: 14px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
   .cooking-step-text { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1.4; color: var(--text); overflow-y: auto; }
   
+  /* V19: Timer */
+  .cooking-timer-btn { background: var(--warn); color: white; border: none; padding: 14px 24px; border-radius: 14px; font-size: 18px; font-weight: 600; margin-top: 24px; display: none; align-items: center; justify-content: center; gap: 10px; width: 100%; cursor: pointer; box-shadow: 0 4px 12px rgba(212, 154, 55, 0.3); }
+  .cooking-timer-btn.active { background: var(--danger); box-shadow: 0 4px 12px rgba(182, 70, 54, 0.3); }
+  .cooking-timer-display { font-family: monospace; font-size: 20px; letter-spacing: 2px; }
+
   .cooking-footer { display: flex; gap: 12px; margin-top: 20px; }
   .cooking-btn { flex: 1; padding: 16px; border-radius: 16px; font-size: 18px; font-weight: 600; border: none; text-align: center; }
   .cooking-btn-prev { background: var(--card); color: var(--text); border: 1px solid var(--line); flex: 0.5; }
@@ -329,7 +334,7 @@
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V18</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V19</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -361,7 +366,7 @@
 
 <div class="voice-banner" id="voiceBanner"></div>
 
-<!-- V18: Pantalla de Modo Cocina -->
+<!-- V19: Pantalla de Modo Cocina -->
 <div class="cooking-overlay" id="cookingOverlay">
   <div class="cooking-header">
     <h2 class="serif" id="cookingTitle">Receta</h2>
@@ -379,6 +384,11 @@
     <div class="cooking-step-box">
       <div class="cooking-step-number" id="cookingStepNumber">Paso 1</div>
       <div class="cooking-step-text" id="cookingStepText">...</div>
+      
+      <!-- V19: Botón de Temporizador -->
+      <button class="cooking-timer-btn" id="cookingTimerBtn" onclick="toggleCookingTimer()">
+        <span>⏱️</span> <span id="cookingTimerLabel">Iniciar</span>
+      </button>
     </div>
   </div>
 
@@ -659,11 +669,11 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V18 - Modo Cocina', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V19 - Temporizadores en Modo Cocina', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
 const FAMILY_CODE = "heladera-ink-familia";
-const STORAGE_KEY = "fresco_ui_v18";
+const STORAGE_KEY = "fresco_ui_v19";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
 let fbDb = null, fbConnected = false, fbReady = false, skipCloudWrite = false, cloudWriteTimer = null;
@@ -1048,7 +1058,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v18","fresco_ui_v17","fresco_ui_v16","fresco_ui_v15"].forEach(function(k){
+["fresco_ui_v19","fresco_ui_v18","fresco_ui_v17","fresco_ui_v16","fresco_ui_v15"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -1739,14 +1749,34 @@ function cookRecipe(recipeId, isCustom, scale){
 }
 
 /* ============================================================
-   V18 — MODO COCINA
+   V19 — MODO COCINA + TEMPORIZADOR
    ============================================================ */
 
 var cookingRecipeData = null;
 var cookingCurrentStep = 0;
 var wakeLock = null;
 
-async function openCookingMode(recipeId, isCustom, scale) {
+var timerInterval = null;
+var timerRemaining = 0;
+var timerTotal = 0;
+var isTimerRunning = false;
+
+function extractTimeFromText(text) {
+  // Busca patrones como "40 minutos", "2 horas", "10 min", "1h"
+  var regex = /(\d+)\s*(min|minuto|minutos|m|h|hora|horas|hs)/i;
+  var match = text.match(regex);
+  if (!match) return 0;
+  
+  var val = parseInt(match[1], 10);
+  var unit = match[2].toLowerCase();
+  
+  if (unit.startsWith('h')) {
+    return val * 60; // Convertir horas a minutos
+  }
+  return val;
+}
+
+function openCookingMode(recipeId, isCustom, scale) {
   var r = null;
   if(isCustom) r = state.recipes.find(function(x){ return x.id === recipeId; });
   else {
@@ -1769,6 +1799,7 @@ async function openCookingMode(recipeId, isCustom, scale) {
     isCustom: isCustom
   };
   cookingCurrentStep = 0;
+  stopCookingTimer(); // Reiniciar cualquier timer previo
   
   $("#cookingTitle").textContent = r.name;
   
@@ -1814,6 +1845,127 @@ function renderCookingStep() {
     nextBtn.textContent = "Siguiente →";
     nextBtn.className = "cooking-btn cooking-btn-next";
     nextBtn.onclick = nextCookingStep;
+  }
+
+  // V19: Lógica del temporizador
+  var timerBtn = $("#cookingTimerBtn");
+  var timerLabel = $("#cookingTimerLabel");
+  
+  if (isTimerRunning) {
+    // Si ya hay un timer corriendo, no lo interrumpimos al cambiar de paso
+    timerBtn.style.display = "flex";
+    timerBtn.classList.add("active");
+    updateTimerDisplay();
+  } else {
+    var mins = extractTimeFromText(steps[cookingCurrentStep]);
+    if (mins > 0) {
+      timerBtn.style.display = "flex";
+      timerBtn.classList.remove("active");
+      timerLabel.textContent = "Iniciar " + mins + " min";
+      timerTotal = mins * 60;
+      timerRemaining = timerTotal;
+    } else {
+      timerBtn.style.display = "none";
+    }
+  }
+}
+
+function toggleCookingTimer() {
+  if (isTimerRunning) {
+    stopCookingTimer();
+  } else {
+    startCookingTimer();
+  }
+}
+
+function startCookingTimer() {
+  if (timerRemaining <= 0) return;
+  isTimerRunning = true;
+  
+  var timerBtn = $("#cookingTimerBtn");
+  timerBtn.classList.add("active");
+  
+  timerInterval = setInterval(function() {
+    timerRemaining--;
+    updateTimerDisplay();
+    
+    if (timerRemaining <= 0) {
+      stopCookingTimer();
+      playTimerAlarm();
+    }
+  }, 1000);
+  
+  updateTimerDisplay();
+}
+
+function stopCookingTimer() {
+  isTimerRunning = false;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  
+  var timerBtn = $("#cookingTimerBtn");
+  if (timerBtn) {
+    timerBtn.classList.remove("active");
+    // Si hay un tiempo en el paso actual, lo restauramos
+    if (cookingRecipeData) {
+      var mins = extractTimeFromText(cookingRecipeData.steps[cookingCurrentStep]);
+      if (mins > 0) {
+        $("#cookingTimerLabel").textContent = "Iniciar " + mins + " min";
+        timerTotal = mins * 60;
+        timerRemaining = timerTotal;
+      }
+    }
+  }
+}
+
+function updateTimerDisplay() {
+  var mins = Math.floor(timerRemaining / 60);
+  var secs = timerRemaining % 60;
+  var display = (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
+  
+  $("#cookingTimerLabel").innerHTML = '<span class="cooking-timer-display">' + display + '</span> <span style="font-size:12px; opacity:0.8; margin-left:8px;">(Tocar para parar)</span>';
+}
+
+function playTimerAlarm() {
+  // Vibrar (si el dispositivo lo soporta)
+  if (navigator.vibrate) {
+    navigator.vibrate([500, 200, 500, 200, 500]);
+  }
+  
+  // Sonido (usando un beep de base64)
+  try {
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var oscillator = audioCtx.createOscillator();
+    var gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 800; // Hz
+    gainNode.gain.value = 1;
+    
+    oscillator.start();
+    
+    setTimeout(function() {
+      oscillator.stop();
+      audioCtx.close();
+    }, 1000); // 1 segundo de beep
+  } catch(e) {
+    console.log("No se pudo reproducir el sonido", e);
+  }
+
+  // Alerta visual
+  alert("⏱️ ¡Tiempo terminado!");
+  
+  // Restaurar el botón
+  if (cookingRecipeData) {
+    var mins = extractTimeFromText(cookingRecipeData.steps[cookingCurrentStep]);
+    if (mins > 0) {
+      $("#cookingTimerLabel").textContent = "Iniciar " + mins + " min";
+      timerTotal = mins * 60;
+      timerRemaining = timerTotal;
+    }
   }
 }
 
@@ -1861,6 +2013,7 @@ function releaseWakeLock() {
 }
 
 function closeCookingMode() {
+  stopCookingTimer();
   $("#cookingOverlay").classList.remove("active");
   releaseWakeLock();
   cookingRecipeData = null;
@@ -1868,7 +2021,7 @@ function closeCookingMode() {
 }
 
 /* ============================================================
-   FIN V18 — MODO COCINA
+   FIN V19 — MODO COCINA + TEMPORIZADOR
    ============================================================ */
 
 var view = "hoy", selectedDay = 0, stockQuery = "", cookableOnly = false;
