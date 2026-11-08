@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V17 — Despensa de casa</title>
+<title>Fresco V18 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -236,9 +236,37 @@
   #shopScannerBox video { display: block; width: 100%; max-height: 260px; object-fit: cover; }
   #shopScannerBox .scan-close { position: absolute; right: 10px; top: 10px; background: rgba(0,0,0,.6); color: #fff; border: none; border-radius: 16px; padding: 6px 12px; font-size: 13px; }
 
-  /* V17: Góndolas y Historial */
   .aisle-header { font-family: 'DM Serif Display', serif; font-size: 18px; margin: 20px 0 8px; color: var(--text); border-bottom: 1px solid var(--line); padding-bottom: 4px; }
   .aisle-header:first-child { margin-top: 8px; }
+
+  /* V18: Modo Cocina */
+  .cooking-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 1000; display: none; flex-direction: column;
+    padding: 20px;
+  }
+  .cooking-overlay.active { display: flex; }
+  .cooking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .cooking-header h2 { font-size: 24px; color: var(--text); }
+  .cooking-close { background: var(--danger-light); color: var(--danger); border: none; padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: 14px; }
+  .cooking-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .cooking-ingredients { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 20px; max-height: 35vh; overflow-y: auto; border: 1px solid var(--line); }
+  .cooking-ingredients h3 { font-size: 16px; margin-bottom: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .cooking-ing-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 16px; }
+  .cooking-ing-item:last-child { border-bottom: none; }
+  .cooking-ing-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); }
+  .cooking-ing-item.checked span { text-decoration: line-through; color: var(--muted); }
+  
+  .cooking-step-box { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; background: var(--card); border-radius: 24px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--line); }
+  .cooking-step-number { font-size: 14px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
+  .cooking-step-text { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1.4; color: var(--text); overflow-y: auto; }
+  
+  .cooking-footer { display: flex; gap: 12px; margin-top: 20px; }
+  .cooking-btn { flex: 1; padding: 16px; border-radius: 16px; font-size: 18px; font-weight: 600; border: none; text-align: center; }
+  .cooking-btn-prev { background: var(--card); color: var(--text); border: 1px solid var(--line); flex: 0.5; }
+  .cooking-btn-next { background: var(--accent); color: white; }
+  .cooking-btn-finish { background: var(--dark); color: white; }
+  .cooking-btn:disabled { opacity: 0.5; }
 
   .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--card); display: flex; justify-content: space-around; align-items: flex-end; padding: 8px 0 18px; border-top: 1px solid var(--line); z-index: 100; }
   .nav-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--muted); padding: 6px 10px; border-radius: 18px; position: relative; min-width: 56px; }
@@ -301,7 +329,7 @@
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V17</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V18</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -332,6 +360,34 @@
 </div>
 
 <div class="voice-banner" id="voiceBanner"></div>
+
+<!-- V18: Pantalla de Modo Cocina -->
+<div class="cooking-overlay" id="cookingOverlay">
+  <div class="cooking-header">
+    <h2 class="serif" id="cookingTitle">Receta</h2>
+    <button class="cooking-close" onclick="closeCookingMode()">✕ Cerrar</button>
+  </div>
+  
+  <div class="cooking-content">
+    <!-- Ingredientes -->
+    <div class="cooking-ingredients">
+      <h3>Ingredientes</h3>
+      <div id="cookingIngredientsList"></div>
+    </div>
+
+    <!-- Paso Actual -->
+    <div class="cooking-step-box">
+      <div class="cooking-step-number" id="cookingStepNumber">Paso 1</div>
+      <div class="cooking-step-text" id="cookingStepText">...</div>
+    </div>
+  </div>
+
+  <!-- Botones -->
+  <div class="cooking-footer" id="cookingFooter">
+    <button class="cooking-btn cooking-btn-prev" id="cookingPrevBtn" onclick="prevCookingStep()" disabled>← Anterior</button>
+    <button class="cooking-btn cooking-btn-next" id="cookingNextBtn" onclick="nextCookingStep()">Siguiente →</button>
+  </div>
+</div>
 
 <div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-content">
@@ -466,7 +522,6 @@
   </div>
 </div>
 
-<!-- V17: Modal de Historial -->
 <div class="modal-overlay" id="historyModal" onclick="if(event.target===this)closeHistoryModal()">
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 8px;">Historial de compras</h2>
@@ -604,11 +659,11 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V17 - Lista por góndola e historial', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V18 - Modo Cocina', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
 const FAMILY_CODE = "heladera-ink-familia";
-const STORAGE_KEY = "fresco_ui_v17";
+const STORAGE_KEY = "fresco_ui_v18";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
 let fbDb = null, fbConnected = false, fbReady = false, skipCloudWrite = false, cloudWriteTimer = null;
@@ -993,7 +1048,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v17","fresco_ui_v16","fresco_ui_v15","fresco_ui_v14","fresco_ui_v13"].forEach(function(k){
+["fresco_ui_v18","fresco_ui_v17","fresco_ui_v16","fresco_ui_v15"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -1005,7 +1060,7 @@ function migrateState(){
   if (!Array.isArray(state.hiddenRecipes)) state.hiddenRecipes = [];
   if (!state.products || typeof state.products !== "object") state.products = {};
   if (!state.shop || !Array.isArray(state.shop)) state.shop = [];
-  if (!Array.isArray(state.history)) state.history = []; // V17
+  if (!Array.isArray(state.history)) state.history = [];
   if (typeof state.doorOpen !== "boolean") state.doorOpen = false;
   if (!state.filterChangedAt) state.filterChangedAt = shiftDays(-18);
   state.items.forEach(function(it){
@@ -1420,13 +1475,12 @@ function bumpShopQty(id, dir){
 function receiveShop(){
   var done = state.shop.filter(function(l){ return l.done; }); if(!done.length) return;
 
-  // V17: Guardar en historial antes de procesar
   var historyEntry = {
     id: uid(),
     date: new Date().toISOString(),
     items: JSON.parse(JSON.stringify(done))
   };
-  state.history.unshift(historyEntry); // Guardar al principio
+  state.history.unshift(historyEntry);
 
   done.forEach(function(line){
     var target = line.fromItemId ? state.items.find(function(x){ return x.id === line.fromItemId; }) : null;
@@ -1683,6 +1737,139 @@ function cookRecipe(recipeId, isCustom, scale){
     showToast('✓ Stock restaurado');
   });
 }
+
+/* ============================================================
+   V18 — MODO COCINA
+   ============================================================ */
+
+var cookingRecipeData = null;
+var cookingCurrentStep = 0;
+var wakeLock = null;
+
+async function openCookingMode(recipeId, isCustom, scale) {
+  var r = null;
+  if(isCustom) r = state.recipes.find(function(x){ return x.id === recipeId; });
+  else {
+    var bi = (typeof RECIPES !== 'undefined' ? RECIPES : []).find(function(x){ return x.id === recipeId; });
+    r = bi || state.recipes.find(function(x){ return x.id === recipeId; });
+  }
+  if(!r) return;
+  
+  if(!r.steps || r.steps.length === 0) {
+    showToast("Esta receta no tiene pasos guardados.");
+    return;
+  }
+
+  cookingRecipeData = {
+    id: r.id,
+    name: r.name,
+    steps: r.steps,
+    needs: r.needs,
+    scale: scale || 1,
+    isCustom: isCustom
+  };
+  cookingCurrentStep = 0;
+  
+  $("#cookingTitle").textContent = r.name;
+  
+  // Renderizar ingredientes
+  var ingHtml = '';
+  r.needs.forEach(function(needStr, idx) {
+    var ing = parseIngredient(needStr);
+    var qtyText = ing.qty ? (ing.qty * (scale || 1)) : '';
+    var unitText = ing.unit || '';
+    var display = esc(ing.name) + (qtyText ? ' <strong>(' + qtyText + ' ' + unitText + ')</strong>' : '');
+    ingHtml += '<label class="cooking-ing-item" id="cooking-ing-' + idx + '">' +
+               '<input type="checkbox" onchange="this.parentNode.classList.toggle(\'checked\', this.checked)">' +
+               '<span>' + display + '</span>' +
+               '</label>';
+  });
+  $("#cookingIngredientsList").innerHTML = ingHtml;
+  
+  // Renderizar paso
+  renderCookingStep();
+  
+  // Mostrar overlay
+  $("#cookingOverlay").classList.add("active");
+  
+  // Mantener pantalla encendida
+  requestWakeLock();
+}
+
+function renderCookingStep() {
+  if(!cookingRecipeData) return;
+  var steps = cookingRecipeData.steps;
+  
+  $("#cookingStepNumber").textContent = "Paso " + (cookingCurrentStep + 1) + " de " + steps.length;
+  $("#cookingStepText").textContent = steps[cookingCurrentStep];
+  
+  $("#cookingPrevBtn").disabled = (cookingCurrentStep === 0);
+  
+  var nextBtn = $("#cookingNextBtn");
+  if (cookingCurrentStep === steps.length - 1) {
+    nextBtn.textContent = "✓ Terminar";
+    nextBtn.className = "cooking-btn cooking-btn-finish";
+    nextBtn.onclick = finishCookingMode;
+  } else {
+    nextBtn.textContent = "Siguiente →";
+    nextBtn.className = "cooking-btn cooking-btn-next";
+    nextBtn.onclick = nextCookingStep;
+  }
+}
+
+function nextCookingStep() {
+  if(!cookingRecipeData) return;
+  if(cookingCurrentStep < cookingRecipeData.steps.length - 1) {
+    cookingCurrentStep++;
+    renderCookingStep();
+  }
+}
+
+function prevCookingStep() {
+  if(!cookingRecipeData) return;
+  if(cookingCurrentStep > 0) {
+    cookingCurrentStep--;
+    renderCookingStep();
+  }
+}
+
+function finishCookingMode() {
+  if(!cookingRecipeData) return;
+  if(confirm("¿Ya cocinaste? Se descontarán los ingredientes del stock.")) {
+    var id = cookingRecipeData.id;
+    var isCustom = cookingRecipeData.isCustom;
+    var scale = cookingRecipeData.scale;
+    closeCookingMode();
+    cookRecipe(id, isCustom, scale);
+  }
+}
+
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch (err) {
+    console.log('Wake Lock error:', err);
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLock !== null) {
+    wakeLock.release().then(() => { wakeLock = null; });
+  }
+}
+
+function closeCookingMode() {
+  $("#cookingOverlay").classList.remove("active");
+  releaseWakeLock();
+  cookingRecipeData = null;
+  cookingCurrentStep = 0;
+}
+
+/* ============================================================
+   FIN V18 — MODO COCINA
+   ============================================================ */
 
 var view = "hoy", selectedDay = 0, stockQuery = "", cookableOnly = false;
 var recipeQuery = "", recipeUseStock = false, recipeResults = [], recipeBusy = false, recipeMsg = "", recipeMsgError = false;
@@ -2119,7 +2306,6 @@ function renderItemRow(i){
   '</div>';
 }
 
-// V17: Determinar la góndola para agrupar
 function getAisle(item) {
   var cat = item.snapshot && item.snapshot.category ? item.snapshot.category : guessCategory(item.name);
   if (cat === 'verduras' || cat === 'frutas') return '🥦 Verdulería';
@@ -2127,10 +2313,9 @@ function getAisle(item) {
   if (cat === 'lacteos') return '🥛 Lácteos';
   if (cat === 'congelados') return '🧊 Congelados';
   if (cat === 'bebidas') return '🍷 Bebidas';
-  return '🥫 Almacén'; // condimentos, huevos, otros
+  return '🥫 Almacén'; 
 }
 
-// V17: Modal de historial
 function openHistoryModal() {
   var list = $("#historyList");
   if (!state.history || state.history.length === 0) {
@@ -2289,7 +2474,11 @@ function render(){
         
         var delBtn = '<button class="btn-del-recipe" onclick="deleteRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ')">×</button>';
         var cc = 'recipe-card' + (r.imageUrl ? ' with-hero' : '');
-        var actions = '<div class="recipe-actions" style="margin-top:14px"><button class="btn-small primary" onclick="cookRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ', ' + scale + ')">Cociné esto (' + scale + 'x)</button>' + (r.custom ? '<button class="btn-small danger" onclick="deleteRecipe(\'' + r.id + '\', true)">Quitar</button>' : '') + '</div>';
+        var actions = '<div class="recipe-actions" style="margin-top:14px">' +
+                      '<button class="btn-small primary" onclick="openCookingMode(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ', ' + scale + ')">👨‍🍳 Cocinar</button>' +
+                      '<button class="btn-small" onclick="cookRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ', ' + scale + ')">Descontar stock</button>' +
+                      (r.custom ? '<button class="btn-small danger" onclick="deleteRecipe(\'' + r.id + '\', true)">Quitar</button>' : '') + 
+                      '</div>';
         var content = '<h3 class="serif">' + esc(r.name) + (r.custom ? '<span class="tag-mine">Mía</span>' : '') + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.have.length + '/' + r.needs.length + '</span></div>' + scaleBar + servingsBlockHtml(r, scale) + mh + actions + '</div>';
         html += '<div class="' + cc + '">' + delBtn + recipeHeroHtml(r) + '<div class="recipe-content">' + content + '</div></div>';
       });
@@ -2324,7 +2513,6 @@ function render(){
     '<div id="shopScannerBox" style="display:none"><video id="shopScanVideo" playsinline muted></video><button class="scan-close" onclick="stopShopScanner()">Cerrar</button></div>';
 
     if (pend.length > 0) {
-      // V17: Agrupación por Góndola
       var grouped = {};
       pend.forEach(function(l){
         var aisle = getAisle(l);
@@ -2347,7 +2535,6 @@ function render(){
         }
       });
 
-      // Productos tachados al final
       if (done.length > 0) {
         cardHtml += '<div class="aisle-header" style="opacity:0.6;">✅ Ya comprados (' + done.length + ')</div>';
         done.forEach(function(l){
@@ -2361,7 +2548,6 @@ function render(){
     } else if (state.shop.length === 0) {
       html += '<div class="zone-card" style="padding: 8px 20px;"><div style="text-align:center; padding: 20px; color: var(--muted);">La lista está vacía.<br><br>Escribí, escaneá o dictá arriba.</div></div>';
     } else if (done.length > 0) {
-      // Si solo quedan cosas tachadas
       html += '<div class="zone-card" style="padding: 8px 20px;">';
       html += '<div class="aisle-header" style="opacity:0.6;">✅ Ya comprados (' + done.length + ')</div>';
       done.forEach(function(l){
