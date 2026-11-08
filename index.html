@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V19 — Despensa de casa</title>
+<title>Fresco V20 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -239,6 +239,32 @@
   .aisle-header { font-family: 'DM Serif Display', serif; font-size: 18px; margin: 20px 0 8px; color: var(--text); border-bottom: 1px solid var(--line); padding-bottom: 4px; }
   .aisle-header:first-child { margin-top: 8px; }
 
+  /* V20: Buscador local de recetas */
+  .local-recipe-search {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .local-recipe-search input {
+    border: none;
+    background: transparent;
+    padding: 12px 0;
+    font-size: 15px;
+    color: var(--text);
+    flex: 1;
+    outline: none;
+  }
+  .local-recipe-search svg {
+    width: 18px;
+    height: 18px;
+    color: var(--muted);
+  }
+
   /* V19: Modo Cocina + Temporizador */
   .cooking-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -261,7 +287,6 @@
   .cooking-step-number { font-size: 14px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
   .cooking-step-text { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1.4; color: var(--text); overflow-y: auto; }
   
-  /* V19: Timer */
   .cooking-timer-btn { background: var(--warn); color: white; border: none; padding: 14px 24px; border-radius: 14px; font-size: 18px; font-weight: 600; margin-top: 24px; display: none; align-items: center; justify-content: center; gap: 10px; width: 100%; cursor: pointer; box-shadow: 0 4px 12px rgba(212, 154, 55, 0.3); }
   .cooking-timer-btn.active { background: var(--danger); box-shadow: 0 4px 12px rgba(182, 70, 54, 0.3); }
   .cooking-timer-display { font-family: monospace; font-size: 20px; letter-spacing: 2px; }
@@ -334,7 +359,7 @@
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V19</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V20</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -366,7 +391,7 @@
 
 <div class="voice-banner" id="voiceBanner"></div>
 
-<!-- V19: Pantalla de Modo Cocina -->
+<!-- Pantalla de Modo Cocina -->
 <div class="cooking-overlay" id="cookingOverlay">
   <div class="cooking-header">
     <h2 class="serif" id="cookingTitle">Receta</h2>
@@ -385,7 +410,7 @@
       <div class="cooking-step-number" id="cookingStepNumber">Paso 1</div>
       <div class="cooking-step-text" id="cookingStepText">...</div>
       
-      <!-- V19: Botón de Temporizador -->
+      <!-- Botón de Temporizador -->
       <button class="cooking-timer-btn" id="cookingTimerBtn" onclick="toggleCookingTimer()">
         <span>⏱️</span> <span id="cookingTimerLabel">Iniciar</span>
       </button>
@@ -669,11 +694,11 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V19 - Temporizadores en Modo Cocina', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V20 - Buscador y Agrupador de Recetas', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
 const FAMILY_CODE = "heladera-ink-familia";
-const STORAGE_KEY = "fresco_ui_v19";
+const STORAGE_KEY = "fresco_ui_v20";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
 let fbDb = null, fbConnected = false, fbReady = false, skipCloudWrite = false, cloudWriteTimer = null;
@@ -1058,7 +1083,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v19","fresco_ui_v18","fresco_ui_v17","fresco_ui_v16","fresco_ui_v15"].forEach(function(k){
+["fresco_ui_v20","fresco_ui_v19","fresco_ui_v18","fresco_ui_v17","fresco_ui_v16"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -1762,17 +1787,12 @@ var timerTotal = 0;
 var isTimerRunning = false;
 
 function extractTimeFromText(text) {
-  // Busca patrones como "40 minutos", "2 horas", "10 min", "1h"
   var regex = /(\d+)\s*(min|minuto|minutos|m|h|hora|horas|hs)/i;
   var match = text.match(regex);
   if (!match) return 0;
-  
   var val = parseInt(match[1], 10);
   var unit = match[2].toLowerCase();
-  
-  if (unit.startsWith('h')) {
-    return val * 60; // Convertir horas a minutos
-  }
+  if (unit.startsWith('h')) return val * 60;
   return val;
 }
 
@@ -1799,11 +1819,10 @@ function openCookingMode(recipeId, isCustom, scale) {
     isCustom: isCustom
   };
   cookingCurrentStep = 0;
-  stopCookingTimer(); // Reiniciar cualquier timer previo
+  stopCookingTimer();
   
   $("#cookingTitle").textContent = r.name;
   
-  // Renderizar ingredientes
   var ingHtml = '';
   r.needs.forEach(function(needStr, idx) {
     var ing = parseIngredient(needStr);
@@ -1817,13 +1836,10 @@ function openCookingMode(recipeId, isCustom, scale) {
   });
   $("#cookingIngredientsList").innerHTML = ingHtml;
   
-  // Renderizar paso
   renderCookingStep();
   
-  // Mostrar overlay
   $("#cookingOverlay").classList.add("active");
   
-  // Mantener pantalla encendida
   requestWakeLock();
 }
 
@@ -1847,12 +1863,10 @@ function renderCookingStep() {
     nextBtn.onclick = nextCookingStep;
   }
 
-  // V19: Lógica del temporizador
   var timerBtn = $("#cookingTimerBtn");
   var timerLabel = $("#cookingTimerLabel");
   
   if (isTimerRunning) {
-    // Si ya hay un timer corriendo, no lo interrumpimos al cambiar de paso
     timerBtn.style.display = "flex";
     timerBtn.classList.add("active");
     updateTimerDisplay();
@@ -1906,7 +1920,6 @@ function stopCookingTimer() {
   var timerBtn = $("#cookingTimerBtn");
   if (timerBtn) {
     timerBtn.classList.remove("active");
-    // Si hay un tiempo en el paso actual, lo restauramos
     if (cookingRecipeData) {
       var mins = extractTimeFromText(cookingRecipeData.steps[cookingCurrentStep]);
       if (mins > 0) {
@@ -1927,12 +1940,10 @@ function updateTimerDisplay() {
 }
 
 function playTimerAlarm() {
-  // Vibrar (si el dispositivo lo soporta)
   if (navigator.vibrate) {
     navigator.vibrate([500, 200, 500, 200, 500]);
   }
   
-  // Sonido (usando un beep de base64)
   try {
     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     var oscillator = audioCtx.createOscillator();
@@ -1942,7 +1953,7 @@ function playTimerAlarm() {
     gainNode.connect(audioCtx.destination);
     
     oscillator.type = 'sine';
-    oscillator.frequency.value = 800; // Hz
+    oscillator.frequency.value = 800;
     gainNode.gain.value = 1;
     
     oscillator.start();
@@ -1950,15 +1961,13 @@ function playTimerAlarm() {
     setTimeout(function() {
       oscillator.stop();
       audioCtx.close();
-    }, 1000); // 1 segundo de beep
+    }, 1000);
   } catch(e) {
     console.log("No se pudo reproducir el sonido", e);
   }
 
-  // Alerta visual
   alert("⏱️ ¡Tiempo terminado!");
   
-  // Restaurar el botón
   if (cookingRecipeData) {
     var mins = extractTimeFromText(cookingRecipeData.steps[cookingCurrentStep]);
     if (mins > 0) {
@@ -2027,11 +2036,38 @@ function closeCookingMode() {
 var view = "hoy", selectedDay = 0, stockQuery = "", cookableOnly = false;
 var recipeQuery = "", recipeUseStock = false, recipeResults = [], recipeBusy = false, recipeMsg = "", recipeMsgError = false;
 var recipeScales = {}; 
+var localRecipeQuery = ""; // V20
 
 function setRecipeScale(id, scale) {
   recipeScales[id] = scale;
   render();
 }
+
+function setLocalRecipeQuery(val) {
+  localRecipeQuery = val;
+  render();
+  var inp = $("#localRecipeSearchInput");
+  if(inp){ inp.focus(); inp.setSelectionRange(val.length, val.length); }
+}
+
+/* ============================================================
+   V20 — BUSCADOR Y AGRUPADOR DE RECETAS
+   ============================================================ */
+function getRecipeCategory(recipe) {
+  var txt = fold(recipe.name + " " + (recipe.needs || []).join(" "));
+  if (/\b(pollo|pechuga|muslo|alita|poultr|chicken)\b/.test(txt)) return { name: "🍗 Pollo", order: 1 };
+  if (/\b(carne|vaca|cerdo|bife|milanesa|asado|chorizo|bondiola|res|pork|beef)\b/.test(txt)) return { name: "🥩 Carnes", order: 2 };
+  if (/\b(pasta|fideo|tallarin|raviol|ñoqui|spaghetti|macarr|lasaña|tarta|empanada)\b/.test(txt)) return { name: "🍝 Pastas y Masas", order: 3 };
+  if (/\b(arroz|risotto|paella)\b/.test(txt)) return { name: "🍚 Arroz", order: 4 };
+  if (/\b(pescado|atun|salmon|merluza|marisco|camaron|fish)\b/.test(txt)) return { name: "🐟 Pescados", order: 5 };
+  if (/\b(verdura|ensalada|vegetar|vegano|brocoli|espinaca|acelga|zapallo|calabaza|lechuga|tomate)\b/.test(txt)) return { name: "🥗 Verduras", order: 6 };
+  if (/\b(huevo|omelette|tortilla)\b/.test(txt)) return { name: "🥚 Huevos", order: 7 };
+  return { name: "🍲 Otras recetas", order: 8 };
+}
+
+/* ============================================================
+   FIN V20 — BUSCADOR Y AGRUPADOR
+   ============================================================ */
 
 let translateFailures = 0;
 
@@ -2563,14 +2599,17 @@ function render(){
     }
   }
   else if (view === "recetas") {
+    // Buscador de recetas remotas
     html += '<div class="rs-box"><div class="rs-row"><input type="text" id="recipeQuery" placeholder="Ej. pasta, tarta…" value="' + esc(recipeQuery) + '" onkeydown="if(event.key===\'Enter\')searchRecipes()"><button type="button" onclick="searchRecipes()" ' + (recipeBusy ? 'disabled' : '') + '>' + (recipeBusy ? '...' : 'Buscar') + '</button></div><label class="rs-check"><input type="checkbox" id="recipeStock" ' + (recipeUseStock ? 'checked' : '') + '> Usar lo que tengo</label><div class="rs-note">Recetas de TheMealDB</div></div>';
     
+    // Botones de acción
     html += '<div style="display:flex; gap:6px; margin-bottom:16px">' +
       '<button class="btn-small primary" style="flex:1; padding:12px 6px; font-size:12px" onclick="openRecipeModal()">+ Crear</button>' +
       '<button class="btn-small" style="flex:1; padding:12px 6px; font-size:12px; background:var(--accent-light); color:var(--accent); border-color:var(--accent-light)" onclick="openImportModal()">📥 Importar</button>' +
       '<button class="btn-small" style="flex:1; padding:12px 6px; font-size:12px; background:#8a2be2; color:white; border-color:#8a2be2" onclick="openAIModal()">🤖 Chef IA</button>' +
       '</div>';
 
+    // Resultados de búsqueda remota
     if (recipeMsg) html += '<p class="rs-msg ' + (recipeMsgError ? 'error' : '') + '">' + esc(recipeMsg) + '</p>';
     if (recipeResults.length) {
       html += '<h3 class="serif rs-title">Resultados</h3>';
@@ -2594,46 +2633,81 @@ function render(){
       html += '<h3 class="serif rs-title" style="margin-top:24px">Tus recetas</h3>';
     }
     if(state.hiddenRecipes.length > 0){ html += '<div style="text-align:center; margin-bottom:12px;"><button class="btn-small" onclick="restoreRecipes()">↺ Restaurar (' + state.hiddenRecipes.length + ')</button></div>'; }
+
+    // V20: BUSCADOR LOCAL DE RECETAS
+    html += '<div class="local-recipe-search">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>' +
+      '<input type="text" id="localRecipeSearchInput" placeholder="Buscar en mis recetas guardadas..." value="' + esc(localRecipeQuery) + '" oninput="setLocalRecipeQuery(this.value)">' +
+      '</div>';
+
     var bi = RECIPES.filter(function(r){ return !state.hiddenRecipes.includes(r.id); });
     var all = bi.concat(state.recipes.map(function(r){ return Object.assign({}, r, {custom:true}); }));
+    
+    // Filtro por buscador local
+    if (localRecipeQuery.trim()) {
+      all = all.filter(function(r){ return fold(r.name).includes(fold(localRecipeQuery)); });
+    }
+
     var list = all.map(function(r){
       var have = [], missing = [];
       r.needs.forEach(function(n){ if (state.items.some(function(i){ return matchesNeed(i.name, n); })) have.push(n); else missing.push(n); });
       return Object.assign({}, r, {have: have, missing: missing});
     }).filter(function(r){ return r.have.length > 0 || r.custom; });
+    
     if(cookableOnly){ list = list.filter(function(r){ var est = estimateServings(r, recipeScales[r.id] || 1); return est.show && est.count > 0 && est.missingCount === 0; }); }
+    
     list.sort(function(a,b){ return b.have.length - a.have.length; });
-    if (list.length === 0) { html += '<div style="text-align:center; padding: 40px 20px; color: var(--muted);">No hay recetas disponibles.</div>'; }
-    else {
-      list.forEach(function(r){
-        var scale = recipeScales[r.id] || 1;
-        
-        var scaleBar = '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:var(--bg); padding:6px 12px; border-radius:12px; width:fit-content;">' +
-                       '<span style="font-size:12px; color:var(--muted); font-weight:600;">Porciones:</span>' +
-                       '<button class="scale-btn ' + (scale===0.5?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 0.5)">½</button>' +
-                       '<button class="scale-btn ' + (scale===1?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 1)">1x</button>' +
-                       '<button class="scale-btn ' + (scale===2?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 2)">2x</button>' +
-                       '<button class="scale-btn ' + (scale===3?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 3)">3x</button>' +
-                       '</div>';
 
-        var mh = "";
-        if (r.missing.length > 0) {
-          mh = '<div class="recipe-miss-title">Falta:</div><div class="missing-pills">' + r.missing.map(function(m){
-            var base = parseIngredient(m).name;
-            var inShop = state.shop.some(function(s){ return !s.done && fold(s.name) === fold(base); });
-            return '<button class="missing-pill ' + (inShop ? 'in-shop' : '') + '" onclick="addMissingToShop(\'' + esc(base) + '\')">' + esc(m) + ' ' + (inShop ? '✓' : '+') + '</button>';
-          }).join('') + '</div>';
-        } else { mh = '<div class="recipe-have" style="font-weight:600">¡Tenés todo!</div>'; }
+    if (list.length === 0) { 
+      html += '<div style="text-align:center; padding: 40px 20px; color: var(--muted);">' + 
+        (localRecipeQuery ? 'No encontré recetas con ese nombre.' : 'No hay recetas disponibles.') + 
+        '</div>'; 
+    } else {
+      // V20: Agrupación por tipo de alimento predominante
+      var groupedRecipes = {};
+      list.forEach(function(r) {
+        var cat = getRecipeCategory(r);
+        if (!groupedRecipes[cat.name]) groupedRecipes[cat.name] = { order: cat.order, recipes: [] };
+        groupedRecipes[cat.name].recipes.push(r);
+      });
+
+      var sortedCategories = Object.keys(groupedRecipes).sort(function(a, b) {
+        return groupedRecipes[a].order - groupedRecipes[b].order;
+      });
+
+      sortedCategories.forEach(function(catName) {
+        html += '<div class="aisle-header" style="margin-top:24px;">' + catName + '</div>';
         
-        var delBtn = '<button class="btn-del-recipe" onclick="deleteRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ')">×</button>';
-        var cc = 'recipe-card' + (r.imageUrl ? ' with-hero' : '');
-        var actions = '<div class="recipe-actions" style="margin-top:14px">' +
-                      '<button class="btn-small primary" onclick="openCookingMode(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ', ' + scale + ')">👨‍🍳 Cocinar</button>' +
-                      '<button class="btn-small" onclick="cookRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ', ' + scale + ')">Descontar stock</button>' +
-                      (r.custom ? '<button class="btn-small danger" onclick="deleteRecipe(\'' + r.id + '\', true)">Quitar</button>' : '') + 
-                      '</div>';
-        var content = '<h3 class="serif">' + esc(r.name) + (r.custom ? '<span class="tag-mine">Mía</span>' : '') + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.have.length + '/' + r.needs.length + '</span></div>' + scaleBar + servingsBlockHtml(r, scale) + mh + actions + '</div>';
-        html += '<div class="' + cc + '">' + delBtn + recipeHeroHtml(r) + '<div class="recipe-content">' + content + '</div></div>';
+        groupedRecipes[catName].recipes.forEach(function(r){
+          var scale = recipeScales[r.id] || 1;
+          
+          var scaleBar = '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:var(--bg); padding:6px 12px; border-radius:12px; width:fit-content;">' +
+                         '<span style="font-size:12px; color:var(--muted); font-weight:600;">Porciones:</span>' +
+                         '<button class="scale-btn ' + (scale===0.5?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 0.5)">½</button>' +
+                         '<button class="scale-btn ' + (scale===1?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 1)">1x</button>' +
+                         '<button class="scale-btn ' + (scale===2?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 2)">2x</button>' +
+                         '<button class="scale-btn ' + (scale===3?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 3)">3x</button>' +
+                         '</div>';
+
+          var mh = "";
+          if (r.missing.length > 0) {
+            mh = '<div class="recipe-miss-title">Falta:</div><div class="missing-pills">' + r.missing.map(function(m){
+              var base = parseIngredient(m).name;
+              var inShop = state.shop.some(function(s){ return !s.done && fold(s.name) === fold(base); });
+              return '<button class="missing-pill ' + (inShop ? 'in-shop' : '') + '" onclick="addMissingToShop(\'' + esc(base) + '\')">' + esc(m) + ' ' + (inShop ? '✓' : '+') + '</button>';
+            }).join('') + '</div>';
+          } else { mh = '<div class="recipe-have" style="font-weight:600">¡Tenés todo!</div>'; }
+          
+          var delBtn = '<button class="btn-del-recipe" onclick="deleteRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ')">×</button>';
+          var cc = 'recipe-card' + (r.imageUrl ? ' with-hero' : '');
+          var actions = '<div class="recipe-actions" style="margin-top:14px">' +
+                        '<button class="btn-small primary" onclick="openCookingMode(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ', ' + scale + ')">👨‍🍳 Cocinar</button>' +
+                        '<button class="btn-small" onclick="cookRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ', ' + scale + ')">Descontar stock</button>' +
+                        (r.custom ? '<button class="btn-small danger" onclick="deleteRecipe(\'' + r.id + '\', true)">Quitar</button>' : '') + 
+                        '</div>';
+          var content = '<h3 class="serif">' + esc(r.name) + (r.custom ? '<span class="tag-mine">Mía</span>' : '') + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.have.length + '/' + r.needs.length + '</span></div>' + scaleBar + servingsBlockHtml(r, scale) + mh + actions + '</div>';
+          html += '<div class="' + cc + '">' + delBtn + recipeHeroHtml(r) + '<div class="recipe-content">' + content + '</div></div>';
+        });
       });
     }
   }
