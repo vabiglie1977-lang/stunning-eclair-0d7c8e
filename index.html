@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V21 — Despensa de casa</title>
+<title>Fresco V22 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -352,7 +352,6 @@
   .import-preview { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
   .ai-loading { font-size: 14px; text-align: center; color: var(--accent); font-weight: 600; padding: 20px; animation: pulse 1.5s infinite; }
 
-  /* V21: Modal Family Setup */
   .family-option-btn { display: flex; align-items: center; gap: 14px; padding: 18px; border: 1px solid var(--line); background: var(--card); border-radius: 16px; text-align: left; width: 100%; margin-bottom: 10px; }
   .family-option-btn:active { background: var(--bg); }
   .family-option-btn .family-icon { font-size: 28px; flex-shrink: 0; }
@@ -364,7 +363,7 @@
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V21</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V22</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -396,7 +395,6 @@
 
 <div class="voice-banner" id="voiceBanner"></div>
 
-<!-- V21: Modal de Configuración de Familia (primera vez) -->
 <div class="modal-overlay" id="familySetupModal">
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 8px;">¿Cómo vas a usar Fresco?</h2>
@@ -436,7 +434,6 @@
   </div>
 </div>
 
-<!-- V21: Modal de Ajustes de Familia -->
 <div class="modal-overlay" id="familySettingsModal" onclick="if(event.target===this)closeFamilySettings()">
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 12px;">Familia y Sincronización</h2>
@@ -452,7 +449,6 @@
   </div>
 </div>
 
-<!-- Pantalla de Modo Cocina -->
 <div class="cooking-overlay" id="cookingOverlay">
   <div class="cooking-header">
     <h2 class="serif" id="cookingTitle">Receta</h2>
@@ -628,7 +624,6 @@
     <h2 class="serif" style="margin-bottom: 20px;">Ajustes</h2>
     <div class="settings-row"><div><div class="label">Sincronización</div><div class="sub" id="syncStatusText">Iniciando…</div></div></div>
     
-    <!-- V21: Familia -->
     <div class="settings-row">
       <div>
         <div class="label">Familia y Sincronización</div>
@@ -762,10 +757,10 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V21 - Código Familiar y Modo Local', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V22 - Coto Fix', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
-const STORAGE_KEY = "fresco_ui_v21";
+const STORAGE_KEY = "fresco_ui_v22";
 const LOCAL_ONLY_CODE = "_local_only_";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
@@ -1311,7 +1306,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v21","fresco_ui_v20","fresco_ui_v19","fresco_ui_v18","fresco_ui_v17"].forEach(function(k){
+["fresco_ui_v22","fresco_ui_v21","fresco_ui_v20","fresco_ui_v19","fresco_ui_v18"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -1489,7 +1484,7 @@ function shareDownload(){
 }
 
 const SUPERMARKETS = {
-  coto: { name: "Coto Digital", searchUrl: function(q){ return "https://www.cotodigital3.com.ar/sitios/cdigi/browse?Ntt=" + encodeURIComponent(q); } },
+  coto: { name: "Coto Digital", searchUrl: function(q){ return "https://www.cotodigital3.com.ar/sitios/cdigi/browse?_dyncharset=utf-8&Ntt=" + encodeURIComponent(q) + "&Nty=1&Ntk=All%7Cproduct.s"; } },
   carrefour: { name: "Carrefour", searchUrl: function(q){ var s = encodeURIComponent(q); return "https://www.carrefour.com.ar/" + s + "?_q=" + s + "&map=ft"; } },
   jumbo: { name: "Jumbo", searchUrl: function(q){ var s = encodeURIComponent(q); return "https://www.jumbo.com.ar/" + s + "?_q=" + s + "&map=ft"; } },
   disco: { name: "Disco", searchUrl: function(q){ var s = encodeURIComponent(q); return "https://www.disco.com.ar/" + s + "?_q=" + s + "&map=ft"; } },
@@ -2784,7 +2779,6 @@ function render(){
   container.innerHTML = html;
 }
 
-// BOOT
 initFirebase();
 updateSyncStatus();
 initDarkMode();
