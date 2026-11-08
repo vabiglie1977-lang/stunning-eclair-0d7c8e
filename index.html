@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V14 — Despensa de casa</title>
+<title>Fresco V16 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -185,6 +185,10 @@
   .tag-mine { font-size: 11px; color: var(--accent); background: var(--accent-light); border-radius: 10px; padding: 2px 8px; margin-left: 8px; }
   .tag-untranslated { font-size: 11px; color: var(--warn); background: #fdf3e0; border-radius: 10px; padding: 2px 8px; margin-left: 8px; }
 
+  /* V16: Escalador de porciones */
+  .scale-btn { background: var(--card); border: 1px solid var(--line); color: var(--text); padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .scale-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
   .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 8px; flex-wrap: wrap; }
   .btn-share-main { background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 14px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
   .btn-share-main svg { width: 18px; height: 18px; }
@@ -215,7 +219,8 @@
   .shop-info { flex: 1; }
   .shop-name { font-size: 16px; font-weight: 500; }
   .shop-qty { font-size: 13px; color: var(--muted); }
-  .btn-del { background: none; border: none; color: var(--muted); font-size: 20px; padding: 4px; }
+  .btn-del { background: none; border: none; color: var(--muted); font-size: 18px; padding: 8px; cursor: pointer; }
+  .btn-del:active { color: var(--danger); }
 
   .shop-add-box { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; background: var(--card); padding: 12px; border-radius: var(--radius-sm); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
   .shop-add-box .shop-add-row { display: flex; gap: 8px; align-items: stretch; }
@@ -278,7 +283,6 @@
   .legal-content p { font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0 0 12px; }
   .legal-content ul { font-size: 13px; line-height: 1.6; color: var(--muted); padding-left: 20px; margin: 0 0 12px; }
 
-  /* ===== V14: Importar y Chef IA ===== */
   .import-input { width: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; background: var(--bg); color: var(--text); margin-bottom: 12px; }
   .import-textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; font-family: 'Inter', monospace; font-size: 14px; background: var(--bg); color: var(--text); margin-bottom: 12px; resize: vertical; line-height: 1.5; }
   .import-hint { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 10px 0 0; }
@@ -294,7 +298,7 @@
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V14</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V16</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -400,7 +404,6 @@
   </div>
 </div>
 
-<!-- Modal Importar Texto -->
 <div class="modal-overlay" id="importRecipeModal" onclick="if(event.target===this)closeImportModal()">
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 8px;">Importar receta</h2>
@@ -432,7 +435,6 @@
   </div>
 </div>
 
-<!-- V14: Modal Chef IA -->
 <div class="modal-overlay" id="aiRecipeModal" onclick="if(event.target===this)closeAIModal()">
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 8px;">🤖 Chef IA</h2>
@@ -589,11 +591,11 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V14 - Chef IA integrado', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V16 - Escalador de porciones', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
 const FAMILY_CODE = "heladera-ink-familia";
-const STORAGE_KEY = "fresco_ui_v14";
+const STORAGE_KEY = "fresco_ui_v16";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
 let fbDb = null, fbConnected = false, fbReady = false, skipCloudWrite = false, cloudWriteTimer = null;
@@ -921,10 +923,15 @@ function matchesNeed(name, need){
     return w === kw || w === kw+"s" || w === kw+"es" || (kw.length>3 && w.replace(/s$/,"") === kw.replace(/s$/,""));
   }); });
 }
-function estimateServings(recipe){
+
+// V16: Modificar estimateServings para aceptar escala
+function estimateServings(recipe, scale){
+  scale = scale || 1;
   var missing = 0, comp = [], det = [];
   recipe.needs.forEach(function(needStr){
     var ing = parseIngredient(needStr);
+    if (ing.qty) ing.qty = ing.qty * scale;
+    
     var stock = state.items.find(function(it){ return matchesNeed(it.name, ing.name); });
     if(!stock){ missing++; det.push({ name: ing.name, missing: true }); return; }
     if(ing.qty && ing.unit) comp.push({ ing: ing, stock: stock });
@@ -975,7 +982,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v14","fresco_ui_v13","fresco_ui_v12_2","fresco_ui_v12_1","fresco_ui_v12","fresco_ui_v11","fresco_ui_v10","fresco_ui_v9","fresco_ui_v8","fresco_ui_v7","fresco_ui_v5"].forEach(function(k){
+["fresco_ui_v16","fresco_ui_v15","fresco_ui_v14","fresco_ui_v13","fresco_ui_v12_2","fresco_ui_v12_1","fresco_ui_v12"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -1612,7 +1619,9 @@ function deleteRecipe(id, isCustom){
 }
 function restoreRecipes(){ state.hiddenRecipes = []; save(); render(); }
 
-function cookRecipe(recipeId, isCustom){
+// V16: Modificar cookRecipe para aceptar escala
+function cookRecipe(recipeId, isCustom, scale){
+  scale = scale || 1;
   var r = null;
   if(isCustom) r = state.recipes.find(function(x){ return x.id === recipeId; });
   else {
@@ -1626,6 +1635,8 @@ function cookRecipe(recipeId, isCustom){
   var deducted = 0;
   r.needs.forEach(function(needStr){
     var ing = parseIngredient(needStr);
+    if(ing.qty) ing.qty = ing.qty * scale;
+    
     var stock = state.items.find(function(it){ return matchesNeed(it.name, ing.name); });
     if(!stock) return;
     var needQty = ing.qty;
@@ -1653,6 +1664,12 @@ function cookRecipe(recipeId, isCustom){
 
 var view = "hoy", selectedDay = 0, stockQuery = "", cookableOnly = false;
 var recipeQuery = "", recipeUseStock = false, recipeResults = [], recipeBusy = false, recipeMsg = "", recipeMsgError = false;
+var recipeScales = {}; // V16: Almacena las porciones elegidas por receta
+
+function setRecipeScale(id, scale) {
+  recipeScales[id] = scale;
+  render();
+}
 
 let translateFailures = 0;
 
@@ -1760,10 +1777,6 @@ function addRecipe(i){
   save(); render();
   showToast("✓ Receta guardada");
 }
-
-/* ============================================================
-   V14 — IMPORTAR TEXTO Y CHEF IA
-   ============================================================ */
 
 var importedRecipePreview = null;
 
@@ -1916,10 +1929,6 @@ function saveImportedRecipe(){
   showToast("✓ Receta importada: " + name);
 }
 
-/* ============================================================
-   V14 — CHEF IA
-   ============================================================ */
-
 function openAIModal() {
   $("#aiRecipeModal").classList.add("active");
   resetAIModal();
@@ -1971,14 +1980,12 @@ async function generateAIRecipe() {
     if (!res.ok) throw new Error("Error de red");
     var text = await res.text();
     
-    // Extraer JSON en caso de que el modelo agregue texto extra o bloques markdown
     var match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error("No se encontró JSON válido en la respuesta");
     
     var recipe = JSON.parse(match[0]);
     if (!recipe.name || !recipe.needs || !recipe.steps) throw new Error("JSON incompleto");
 
-    // Cargar en el preview
     $("#aiPreviewName").value = recipe.name;
     $("#aiPreviewMinutes").value = recipe.minutes || 20;
     $("#aiPreviewIngredients").value = (recipe.needs || []).join("\n");
@@ -2023,10 +2030,6 @@ function saveAIRecipe() {
   showToast("✓ Receta del Chef IA guardada: " + name);
 }
 
-/* ============================================================
-   FIN V14 — IMPORTAR Y CHEF IA
-   ============================================================ */
-
 function setView(v){ view = v; document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); }); $("#nav-" + v).classList.add('active'); render(); window.scrollTo({top:0, behavior:"smooth"}); }
 function setDay(n){ selectedDay = n; render(); }
 function updateStockSearch(val){ stockQuery = val; render(); var inp = $("#stockSearch"); if(inp){ inp.focus(); inp.setSelectionRange(val.length, val.length); } }
@@ -2050,8 +2053,8 @@ function iconHtml(item, sizeClass){
   }
   return '<div class="' + cls + '">' + fb + '</div>';
 }
-function servingsBlockHtml(r){
-  var est = estimateServings(r); if(!est.show) return "";
+function servingsBlockHtml(r, scale){
+  var est = estimateServings(r, scale); if(!est.show) return "";
   var txt = "", cls = "", limiter = null;
   if(est.missingCount > 0){ txt = "🚫 Faltan " + est.missingCount; cls = "none"; }
   else if(est.count === 0){ txt = "🚫 No alcanza"; cls = "none"; }
@@ -2175,10 +2178,20 @@ function render(){
     if (recipeResults.length) {
       html += '<h3 class="serif rs-title">Resultados</h3>';
       recipeResults.forEach(function(r, i){
+        var scale = recipeScales[r.id] || 1;
         var saved = state.recipes.some(function(x){ return fold(x.name) === fold(r.name); });
         var cc = 'recipe-card' + (r.imageUrl ? ' with-hero' : '');
         var untranslatedBadge = (!r.translated) ? '<span class="tag-untranslated">🌐 sin traducir</span>' : '';
-        var content = '<h3 class="serif">' + esc(r.name) + untranslatedBadge + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.needs.length + ' ingr.</span></div>' + servingsBlockHtml(r) + '<details><summary>Ver pasos</summary><ol>' + r.steps.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ol></details><div class="recipe-actions"><button class="btn-small primary" ' + (saved ? 'disabled' : '') + ' onclick="addRecipe(' + i + ')">' + (saved ? '✓ Guardada' : 'Guardar') + '</button></div>';
+        
+        var scaleBar = '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:var(--bg); padding:6px 12px; border-radius:12px; width:fit-content;">' +
+                       '<span style="font-size:12px; color:var(--muted); font-weight:600;">Porciones:</span>' +
+                       '<button class="scale-btn ' + (scale===0.5?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 0.5)">½</button>' +
+                       '<button class="scale-btn ' + (scale===1?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 1)">1x</button>' +
+                       '<button class="scale-btn ' + (scale===2?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 2)">2x</button>' +
+                       '<button class="scale-btn ' + (scale===3?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 3)">3x</button>' +
+                       '</div>';
+
+        var content = '<h3 class="serif">' + esc(r.name) + untranslatedBadge + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.needs.length + ' ingr.</span></div>' + scaleBar + servingsBlockHtml(r, scale) + '<details><summary>Ver pasos</summary><ol>' + r.steps.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ol></details><div class="recipe-actions"><button class="btn-small primary" ' + (saved ? 'disabled' : '') + ' onclick="addRecipe(' + i + ')">' + (saved ? '✓ Guardada' : 'Guardar') + '</button></div>';
         html += '<div class="' + cc + '">' + recipeHeroHtml(r) + '<div class="recipe-content">' + content + '</div></div>';
       });
       html += '<h3 class="serif rs-title" style="margin-top:24px">Tus recetas</h3>';
@@ -2191,11 +2204,21 @@ function render(){
       r.needs.forEach(function(n){ if (state.items.some(function(i){ return matchesNeed(i.name, n); })) have.push(n); else missing.push(n); });
       return Object.assign({}, r, {have: have, missing: missing});
     }).filter(function(r){ return r.have.length > 0 || r.custom; });
-    if(cookableOnly){ list = list.filter(function(r){ var est = estimateServings(r); return est.show && est.count > 0 && est.missingCount === 0; }); }
+    if(cookableOnly){ list = list.filter(function(r){ var est = estimateServings(r, recipeScales[r.id] || 1); return est.show && est.count > 0 && est.missingCount === 0; }); }
     list.sort(function(a,b){ return b.have.length - a.have.length; });
     if (list.length === 0) { html += '<div style="text-align:center; padding: 40px 20px; color: var(--muted);">No hay recetas disponibles.</div>'; }
     else {
       list.forEach(function(r){
+        var scale = recipeScales[r.id] || 1;
+        
+        var scaleBar = '<div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:var(--bg); padding:6px 12px; border-radius:12px; width:fit-content;">' +
+                       '<span style="font-size:12px; color:var(--muted); font-weight:600;">Porciones:</span>' +
+                       '<button class="scale-btn ' + (scale===0.5?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 0.5)">½</button>' +
+                       '<button class="scale-btn ' + (scale===1?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 1)">1x</button>' +
+                       '<button class="scale-btn ' + (scale===2?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 2)">2x</button>' +
+                       '<button class="scale-btn ' + (scale===3?'active':'') + '" onclick="setRecipeScale(\'' + r.id + '\', 3)">3x</button>' +
+                       '</div>';
+
         var mh = "";
         if (r.missing.length > 0) {
           mh = '<div class="recipe-miss-title">Falta:</div><div class="missing-pills">' + r.missing.map(function(m){
@@ -2204,10 +2227,11 @@ function render(){
             return '<button class="missing-pill ' + (inShop ? 'in-shop' : '') + '" onclick="addMissingToShop(\'' + esc(base) + '\')">' + esc(m) + ' ' + (inShop ? '✓' : '+') + '</button>';
           }).join('') + '</div>';
         } else { mh = '<div class="recipe-have" style="font-weight:600">¡Tenés todo!</div>'; }
+        
         var delBtn = '<button class="btn-del-recipe" onclick="deleteRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ')">×</button>';
         var cc = 'recipe-card' + (r.imageUrl ? ' with-hero' : '');
-        var actions = '<div class="recipe-actions" style="margin-top:14px"><button class="btn-small primary" onclick="cookRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ')">Cociné esto</button>' + (r.custom ? '<button class="btn-small danger" onclick="deleteRecipe(\'' + r.id + '\', true)">Quitar</button>' : '') + '</div>';
-        var content = '<h3 class="serif">' + esc(r.name) + (r.custom ? '<span class="tag-mine">Mía</span>' : '') + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.have.length + '/' + r.needs.length + '</span></div>' + servingsBlockHtml(r) + mh + actions + '</div>';
+        var actions = '<div class="recipe-actions" style="margin-top:14px"><button class="btn-small primary" onclick="cookRecipe(\'' + r.id + '\', ' + (r.custom ? 'true' : 'false') + ', ' + scale + ')">Cociné esto (' + scale + 'x)</button>' + (r.custom ? '<button class="btn-small danger" onclick="deleteRecipe(\'' + r.id + '\', true)">Quitar</button>' : '') + '</div>';
+        var content = '<h3 class="serif">' + esc(r.name) + (r.custom ? '<span class="tag-mine">Mía</span>' : '') + '</h3><div class="recipe-meta"><span>' + r.minutes + ' min</span><span>' + r.have.length + '/' + r.needs.length + '</span></div>' + scaleBar + servingsBlockHtml(r, scale) + mh + actions + '</div>';
         html += '<div class="' + cc + '">' + delBtn + recipeHeroHtml(r) + '<div class="recipe-content">' + content + '</div></div>';
       });
     }
