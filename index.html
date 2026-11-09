@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V24 — Despensa de casa</title>
+<title>Fresco V25 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -363,7 +363,7 @@
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V24</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V25</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -554,15 +554,21 @@
 <div class="modal-overlay" id="importRecipeModal" onclick="if(event.target===this)closeImportModal()">
   <div class="modal-content">
     <h2 class="serif" style="margin-bottom: 8px;">Importar receta</h2>
-    <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Copiá el texto de Instagram/TikTok y pegalo acá</p>
+    <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Copiá el texto o escaneá una foto</p>
 
     <div id="importTabText">
       <div style="background:var(--bg); padding:12px; border-radius:12px; margin-bottom:12px; border:1px solid var(--line);">
-         <p style="margin:0 0 8px; font-size:13px; font-weight:500; color:var(--text);">¿La receta está en Instagram?</p>
-         <p style="margin:0 0 10px; font-size:12px; color:var(--muted);">1. Abrí el post y tocá los 3 puntitos.<br>2. Elegí "Copiar texto".<br>3. Pegalo acá abajo.</p>
-         <button class="btn-small" style="width:100%; background:#E1306C; color:white; border:none;" onclick="window.open('https://www.instagram.com/', '_blank')">Abrir Instagram</button>
+         <p style="margin:0 0 8px; font-size:13px; font-weight:500; color:var(--text);">¿La receta está en Instagram o en papel?</p>
+         <p style="margin:0 0 10px; font-size:12px; color:var(--muted);">Copiá el texto o usá la cámara para escanear la receta.</p>
       </div>
-      <textarea id="importText" class="import-textarea" rows="8" placeholder="Pegá acá la receta que copiaste..."></textarea>
+      <textarea id="importText" class="import-textarea" rows="6" placeholder="Pegá acá la receta que copiaste..."></textarea>
+      
+      <div style="display:flex; gap:10px; margin-bottom:12px;">
+        <button class="btn-small" style="flex:1; padding:12px; font-size:13px; background:#E1306C; color:white; border:none;" onclick="window.open('https://www.instagram.com/', '_blank')">Abrir Instagram</button>
+        <button class="btn-small" style="flex:1; padding:12px; font-size:13px; background:var(--accent); color:white; border:none;" onclick="document.getElementById('ocrFileInput').click()">📸 Escanear Foto</button>
+      </div>
+      <input type="file" id="ocrFileInput" accept="image/*" onchange="processOCRImage(event)" style="display:none">
+      
       <button class="btn-add btn-block" style="justify-content:center; width:100%" onclick="importFromText()">Procesar texto</button>
       <p class="import-hint">Se detectan automáticamente las secciones "Ingredientes" y "Preparación".</p>
     </div>
@@ -672,6 +678,7 @@
       <li><strong>TheMealDB, Google Translate y MyMemory:</strong> Para buscar recetas de cocina y traducirlas automáticamente.</li>
       <li><strong>Firebase (Google):</strong> Para guardar y sincronizar tu lista de compras y despensa.</li>
       <li><strong>Pollinations AI:</strong> Para generar recetas inteligentes basadas en tu stock.</li>
+      <li><strong>Tesseract.js:</strong> Para leer el texto de las fotos de recetas.</li>
     </ul>
     <h4>4. Límite de Responsabilidad</h4>
     <ul>
@@ -679,7 +686,7 @@
       <li>Alimentos vencidos, ya que las fechas dependen del usuario.</li>
       <li>Información nutricional incorrecta proveniente de bases de datos externas.</li>
       <li>Recetas generadas por IA: verificá siempre los ingredientes antes de cocinar.</li>
-      <li>Elección de un código familiar débil: usá un código difícil de adivinar.</li>
+      <li>Texto escaneado: verificá siempre que la lectura de la foto sea correcta.</li>
     </ul>
     <h4>5. Seguridad</h4>
     <p>El código familiar funciona como contraseña. Guardalo en un lugar seguro y no lo compartas con personas ajenas a tu familia.</p>
@@ -757,10 +764,10 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V24 - Firebase Fix', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V25 - OCR Integrado', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
-const STORAGE_KEY = "fresco_ui_v24";
+const STORAGE_KEY = "fresco_ui_v25";
 const LOCAL_ONLY_CODE = "_local_only_";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
@@ -768,7 +775,6 @@ let fbDb = null, fbConnected = false, fbReady = false, skipCloudWrite = false, c
 let fbListener = null;
 let currentFamilyCode = null;
 
-// V24: Helper to ensure Firebase doesn't send objects instead of arrays
 function normalizeArray(obj) {
   if (!obj) return [];
   if (Array.isArray(obj)) return obj;
@@ -801,13 +807,10 @@ function startCloudSync(){
     if(data && data.items){
       skipCloudWrite = true; 
       state = data; 
-      
-      // V24: Normalize arrays to prevent crashes
       state.items = normalizeArray(state.items);
       state.shop = normalizeArray(state.shop);
       state.history = normalizeArray(state.history);
       state.recipes = normalizeArray(state.recipes);
-      
       migrateState(); 
       saveLocal(); 
       render(); 
@@ -879,7 +882,6 @@ function initFamily(){
   } else {
     currentFamilyCode = saved;
     if (currentFamilyCode !== LOCAL_ONLY_CODE) {
-      // Delay slightly to allow UI to render first
       setTimeout(startCloudSync, 100);
     } else {
       updateSyncStatus();
@@ -1337,7 +1339,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v24","fresco_ui_v23","fresco_ui_v22","fresco_ui_v21","fresco_ui_v20"].forEach(function(k){
+["fresco_ui_v25","fresco_ui_v24","fresco_ui_v23","fresco_ui_v22","fresco_ui_v21"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -2492,6 +2494,57 @@ function saveAIRecipe() {
   showToast("✓ Receta guardada: " + name);
 }
 
+// V25: OCR Function
+async function processOCRImage(ev) {
+  var file = ev.target.files[0];
+  if (!file) return;
+  ev.target.value = ""; 
+  
+  setImportMsg("Cargando escáner de texto...", "info");
+  document.querySelector("#importMsg").style.display = "block";
+  
+  try {
+    // Cargar Tesseract.js si no está cargado
+    if (!window.Tesseract) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    setImportMsg("Leyendo la imagen (esto puede tardar unos segundos)...", "info");
+    
+    // Comprimir la imagen antes de procesarla para que sea más rápido
+    var compressedDataUrl = await compressImage(file, 1000); 
+    
+    const worker = await Tesseract.createWorker('spa');
+    const { data: { text } } = await worker.recognize(compressedDataUrl);
+    await worker.terminate();
+
+    if (!text || text.trim().length < 10) {
+      setImportMsg("No pude leer suficiente texto en la imagen. Probá con una foto más clara.", "error");
+      return;
+    }
+
+    // Poner el texto extraído en el textarea
+    $("#importText").value = text;
+    
+    // Llamar a la función que procesa el texto
+    importFromText();
+    
+    if (document.querySelector("#importPreview").style.display === "block") {
+      setImportMsg("✓ Texto extraído de la imagen. Revisá los datos.", "success");
+    }
+
+  } catch (err) {
+    console.error(err);
+    setImportMsg("Error al leer la imagen. Revisá tu conexión a internet e intentá de nuevo.", "error");
+  }
+}
+
 function setView(v){ view = v; document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); }); $("#nav-" + v).classList.add('active'); render(); window.scrollTo({top:0, behavior:"smooth"}); }
 function setDay(n){ selectedDay = n; render(); }
 function updateStockSearch(val){ stockQuery = val; render(); var inp = $("#stockSearch"); if(inp){ inp.focus(); inp.setSelectionRange(val.length, val.length); } }
@@ -2810,7 +2863,6 @@ function render(){
   container.innerHTML = html;
 }
 
-// BOOT V24 with error handling
 try {
   initFirebase();
   updateSyncStatus();
