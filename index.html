@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fresco V23 — Despensa de casa</title>
+<title>Fresco V24 — Despensa de casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -363,7 +363,7 @@
 
 <header class="header">
   <div>
-    <h1>Fresco <span class="version-badge">V23</span> <span class="sync-dot" id="syncDot"></span></h1>
+    <h1>Fresco <span class="version-badge">V24</span> <span class="sync-dot" id="syncDot"></span></h1>
     <p>Despensa de casa</p>
   </div>
   <div class="header-actions">
@@ -757,10 +757,10 @@
 </nav>
 
 <script>
-console.log('%c[Fresco] V23 - Parser de recetas mejorado', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
+console.log('%c[Fresco] V24 - Firebase Fix', 'background:#3d745a;color:white;padding:4px 8px;border-radius:4px;font-weight:bold');
 
 const FIREBASE_CONFIG = { apiKey:"AIzaSyBNSv-llf3Ziq99LKitYo-mBXt-29f8WLY", authDomain:"heladera-ink.firebaseapp.com", databaseURL:"https://heladera-ink-default-rtdb.firebaseio.com", projectId:"heladera-ink", storageBucket:"heladera-ink.firebasestorage.app", messagingSenderId:"510883720130", appId:"1:510883720130:web:efe7ab169b0862034dc45b" };
-const STORAGE_KEY = "fresco_ui_v23";
+const STORAGE_KEY = "fresco_ui_v24";
 const LOCAL_ONLY_CODE = "_local_only_";
 
 function isFirebaseConfigured(){ return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL; }
@@ -768,13 +768,23 @@ let fbDb = null, fbConnected = false, fbReady = false, skipCloudWrite = false, c
 let fbListener = null;
 let currentFamilyCode = null;
 
+// V24: Helper to ensure Firebase doesn't send objects instead of arrays
+function normalizeArray(obj) {
+  if (!obj) return [];
+  if (Array.isArray(obj)) return obj;
+  if (typeof obj === 'object') return Object.keys(obj).map(function(k) { return obj[k]; });
+  return [];
+}
+
 function initFirebase(){
   if(!isFirebaseConfigured()) return;
   try {
-    firebase.initializeApp(FIREBASE_CONFIG);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
     fbDb = firebase.database();
     fbDb.ref(".info/connected").on("value", function(s){ fbConnected = s.val() === true; updateSyncStatus(); });
-  } catch(e){ console.error(e); }
+  } catch(e){ console.error("Firebase init error:", e); }
 }
 
 function startCloudSync(){
@@ -782,15 +792,35 @@ function startCloudSync(){
     updateSyncStatus();
     return;
   }
-  if (fbListener) { fbListener.off(); fbListener = null; }
+  if (fbListener) { try{ fbListener.off(); }catch(e){} fbListener = null; }
   fbReady = false;
   fbListener = fbDb.ref("fresco/" + currentFamilyCode + "/state");
+  
   fbListener.on("value", function(snap){
     var data = snap.val();
-    if(data && Array.isArray(data.items)){
-      skipCloudWrite = true; state = data; migrateState(); saveLocal(); render(); skipCloudWrite = false;
-    } else { pushToCloud(); }
-    fbReady = true; updateSyncStatus();
+    if(data && data.items){
+      skipCloudWrite = true; 
+      state = data; 
+      
+      // V24: Normalize arrays to prevent crashes
+      state.items = normalizeArray(state.items);
+      state.shop = normalizeArray(state.shop);
+      state.history = normalizeArray(state.history);
+      state.recipes = normalizeArray(state.recipes);
+      
+      migrateState(); 
+      saveLocal(); 
+      render(); 
+      skipCloudWrite = false;
+    } else { 
+      pushToCloud(); 
+    }
+    fbReady = true; 
+    updateSyncStatus();
+  }, function(error){
+    console.warn("Firebase read error:", error);
+    fbReady = true;
+    updateSyncStatus();
   });
 }
 
@@ -799,7 +829,7 @@ function pushToCloud(){
   if(!currentFamilyCode || currentFamilyCode === LOCAL_ONLY_CODE) return;
   clearTimeout(cloudWriteTimer);
   cloudWriteTimer = setTimeout(function(){
-    if(fbDb) fbDb.ref("fresco/" + currentFamilyCode + "/state").set(state).catch(function(e){ console.error(e); });
+    if(fbDb) fbDb.ref("fresco/" + currentFamilyCode + "/state").set(state).catch(function(e){ console.error("Firebase write error:", e); });
   }, 350);
 }
 
@@ -849,7 +879,8 @@ function initFamily(){
   } else {
     currentFamilyCode = saved;
     if (currentFamilyCode !== LOCAL_ONLY_CODE) {
-      startCloudSync();
+      // Delay slightly to allow UI to render first
+      setTimeout(startCloudSync, 100);
     } else {
       updateSyncStatus();
     }
@@ -1306,7 +1337,7 @@ function setPhotoPreview(src){
 }
 
 var state = null;
-["fresco_ui_v23","fresco_ui_v22","fresco_ui_v21","fresco_ui_v20","fresco_ui_v19"].forEach(function(k){
+["fresco_ui_v24","fresco_ui_v23","fresco_ui_v22","fresco_ui_v21","fresco_ui_v20"].forEach(function(k){
   if(state && state.items && state.items.length > 0) return;
   try { var s = JSON.parse(localStorage.getItem(k)); if(s && s.items && s.items.length > 0) state = s; } catch(e){}
 });
@@ -2333,30 +2364,23 @@ function importFromText(){
 function parseFreeTextRecipe(text){
   var lines = text.split(/\r?\n/).map(function(l){ return l.trim(); }).filter(Boolean);
   var name = "", minutes = 20, needs = [], steps = [], section = "unknown";
-  
-  // V23: Regex mejorados para detectar cabeceras aunque tengan texto extra como "(para 1 litro)"
   var ING_HEAD = /^(ingredientes?|ingredients?)\b/i;
   var STEP_HEAD = /^(preparaci[oó]n|procedimiento|pasos?|instrucciones|elaboraci[oó]n)\b/i;
   var TIME_RE = /(\d+)\s*(min|minutos?|minute|m)\b/i;
   var HOUR_RE = /(\d+)\s*(h|hora|horas?|hour)/i;
-  
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
     var low = line.toLowerCase().replace(/[#*_]/g, "").trim();
-    
     if (ING_HEAD.test(low)) { section = "ingredients"; continue; }
     if (STEP_HEAD.test(low)) { section = "steps"; continue; }
-    
     var tm = low.match(TIME_RE);
     if (tm) minutes = Math.max(minutes, parseInt(tm[1], 10));
     var hm = low.match(HOUR_RE);
     if (hm) minutes = Math.max(minutes, parseInt(hm[1], 10) * 60);
-    
     if (section === "unknown" && !name && line.length >= 3 && line.length <= 90) {
       var candidate = line.replace(/^(receta|recipe)\s*[:\-–]\s*/i, "").replace(/[#*]/g, "").trim();
       if (candidate && !TIME_RE.test(candidate)) { name = candidate; continue; }
     }
-    
     if (section === "ingredients") {
       var cleaned = line.replace(/^[-•*·▪◦]\s*/, "").replace(/^\d+[\.)]\s*/, "").trim();
       if (cleaned) needs.push(cleaned);
@@ -2365,7 +2389,6 @@ function parseFreeTextRecipe(text){
       if (cleanedStep) steps.push(cleanedStep);
     }
   }
-  
   if (!name) {
     var firstLine = lines[0].replace(/^(receta|recipe)\s*[:\-–]\s*/i, "").replace(/[#*]/g, "").trim();
     name = firstLine || "Receta importada";
@@ -2787,13 +2810,19 @@ function render(){
   container.innerHTML = html;
 }
 
-initFirebase();
-updateSyncStatus();
-initDarkMode();
-initFamily();
-setView('hoy');
-initDonateBanner();
-initVoiceSlider();
+// BOOT V24 with error handling
+try {
+  initFirebase();
+  updateSyncStatus();
+  initDarkMode();
+  initFamily();
+  setView('hoy');
+  initDonateBanner();
+  initVoiceSlider();
+} catch(e) {
+  console.error("Fatal error on boot:", e);
+  document.body.innerHTML += '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:9999;padding:20px;color:red;font-family:sans-serif;"><h3>Error al iniciar la app</h3><p>' + e.message + '</p><button onclick="location.reload()" style="padding:10px;margin-top:10px;">Recargar</button></div>';
+}
 </script>
 </body>
 </html>
